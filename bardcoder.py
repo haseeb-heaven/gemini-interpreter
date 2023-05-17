@@ -18,6 +18,9 @@ class BardCoder:
         self.factualityQueries = data['factualityQueries']
         for factualityQuery in self.factualityQueries:
             logger.info("Init: Factuality Query: " + str(factualityQuery))
+            
+        links = self.get_links(self.factualityQueries)
+        logger.info("Init: Links: " + str(links))
         
         self.textQuery = data['textQuery']
         logger.info("Init: Text Query: " + str(self.textQuery))
@@ -75,3 +78,18 @@ class BardCoder:
         code = self.get_content()
         if code:
             exec(code)
+            
+    def get_links(self,data):
+        links = []
+        print("Get links '",end='\n')
+        print(data,end='\n')
+        print("'",end='\n')
+        if data is None:
+            return links
+        
+        for inner_list in data[0]:
+            link = inner_list[2][0]
+            if link:
+                links.append(link)
+        return links
+

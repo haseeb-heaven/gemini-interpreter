@@ -82,6 +82,11 @@ if __name__ == "__main__":
         for factualityQuery in bard_coder.factualityQueries:
             print(str(factualityQuery))
         
+        links = bard_coder.get_links(bard_coder.factualityQueries)
+        print("Links are : ")
+        for link in links:
+            print("Link : " + str(link))
+        
         print("Text Query is : " + str(bard_coder.textQuery))
         
         print("Choices are : ")
