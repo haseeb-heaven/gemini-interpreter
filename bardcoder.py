@@ -7,7 +7,19 @@ import traceback
 
 # set your __Secure-1PSID value to key
 # os.environ['_BARD_API_KEY']="XXXXXXXXXXXXXXXXXX"
-# Write Prime numbers from 1 to 50 in C++
+
+"""
+Factorial of number using recursion in C++  only code no explanations.
+Sum of all numbers from 1 to 100  only code no explanations. in Java  only code no explanations.
+Prime numbers from 10 to 20  only code no explanations. in Go lang  only code no explanations.
+Floyds triangle using for loop only code no explanations. in Swift  only code no explanations.
+Sum of all even numbers only code no explanations. in Python  only code no explanations.
+Find string or int is palindrome in Rust  only code no explanations.
+Write Fibonacci series from 1 to 100 in C++  only code no explanations.
+Calculate the power of a number using recursion in Python only code no explanations.
+Find the maximum and minimum element in an array using C++ only code no explanations.
+"""
+
 
 class BardCoder:
     global bard
@@ -28,48 +40,63 @@ class BardCoder:
             # Setups the logging.
             self.logger = self.setup_logger('bardcoder.log')
             self.add_log("Init Starting ...")
-            self.add_log("Init: Prompt: " + prompt)
+            self.add_log(f"Init: Prompt: {prompt}")
             
             # Get the response from the prompt.
             response = self.get_response(prompt)
-            data = json.dumps(response, indent=4)
-            json_data = json.loads(data)
+            if response:
+                #self.add_log(f"Init: Response: {response}")
+                data = json.dumps(response, indent=4)
             
-            # Getting the data from the response.
-            self.add_log("Init: Data: " + str(json_data))
-            if data:
-                self.content = json_data['content']
+                if data:
+                    #self.add_log(f"Init: Data: {data}")
+                        
+                    # Getting the data from the response.
+                    json_data = json.loads(data)
+                    if json_data:
+                        self.content = json_data['content']
+                        self.add_log("Init: Content: " + self.content)
                 
-            # Saving the response to file.
-            self.add_log("Init: Saving response to file.")
-            self.save_file("response/response.json",json.dumps(response, indent=4))
-            self.save_file("response/content.txt", self.content)
+                        # Saving the response to file.
+                        self.add_log("Init: Saving response to file.")
+                        self.save_file("response/response.json",json.dumps(response, indent=4))
+                        self.save_file("response/content.md", self.content)
             
-            # Getting the content from the response.
-            self.add_log("Init: Content: " + self.content)
-            self.conversation_id = json_data['conversation_id']
-            
-            # Getting the conversation ID from the response.
-            self.add_log("Init: Conversation ID: " + self.conversation_id)
-            self.response_id = json_data['response_id']
-            self.add_log("Init: Response ID: " + self.response_id)
-            
-            # Get the factuality queries from the response.
-            self.factualityQueries = json_data['factualityQueries']
-            for factualityQuery in self.factualityQueries:
-                self.add_log("Init: Factuality Query: " + str(factualityQuery))
-            # Get the links from the response.    
-            links = self.get_links(self.factualityQueries)
-            self.add_log("Init: Links: " + str(links))
+                        # Getting the content from the response.
+                        self.conversation_id = json_data['conversation_id']
+                        self.add_log(f"Init: Conversation ID: {self.conversation_id}")
+                                    
+                        # Getting the conversation ID from the response.
+                        self.response_id = json_data['response_id']
+                        if self.response_id:
+                            self.add_log(f"Init: Response ID: {self.response_id}")
+                        
+                        # Get the factuality queries from the response.
+                        self.factualityQueries = json_data['factualityQueries']
+                        if self.factualityQueries:
+                            for factualityQuery in self.factualityQueries:
+                                self.add_log(f"Init: Factuality Query: {factualityQuery}")
+                            # Get the links from the response.    
+                            links = self.get_links()
+                            self.add_log(f"Init: Links: {links}")
 
-            # Get the text query from the response.
-            self.textQuery = json_data['textQuery']
-            self.add_log("Init: Text Query: " + str(self.textQuery))
-            
-            # Getting the choices from the response.
-            self.choices = json_data['choices']
-            for choice in self.choices:
-                self.add_log("Init: Choice: " + str(choice))
+                        # Get the text query from the response.
+                        self.textQuery = json_data['textQuery']
+                        if self.textQuery:
+                            self.add_log(f"Init: Text Query: {self.textQuery}")
+                        
+                        # Getting the choices from the response.
+                        self.choices = json_data['choices']
+                        if self.choices:
+                            for choice in self.choices:
+                                self.add_log(f"Init: Choice: {choice}")
+                
+                        # Mark end of init. - Success
+                        self.add_log("Init: Success.")
+                    else:
+                        self.add_log("Init: Json data is empty.")
+                else:
+                    self.add_log("Init: Data is empty.")
         
         except Exception as e:
             # print stack trace
@@ -115,43 +142,59 @@ class BardCoder:
         return logging.getLogger(__name__)
 
     def get_code(self):
-        start_index = self.content.find('```')
-        end_index = self.content.rfind('```')
-        if start_index != -1 and end_index != -1:
-            return self.content[start_index+3:end_index]
-        else:
-            return None
+        if self.content:
+            self.add_log("get_code: Getting code from content.")
+            start_index = self.content.find('```')
+            end_index = self.content.rfind('```')
+            if start_index != -1 and end_index != -1:
+                code = str(self.content[start_index+3:end_index])
+                self.add_log(f"get_code: Code: {code}")
+                return code
+        self.add_log("get_code: Code is empty.")
+        return None
+                
 
-    def save_code(self, filename="codes/code.txt"):
+    def save_code(self, filename="code.txt"):
         code = self.get_code()
-        code = code.replace("\\n", "\n").replace("\\t", "\t")
-        if code:
-            with open(filename, 'w') as f:
-                f.write(code)
-
-    def save_code(self, filename="codes/code.txt", code=None):
         if code:
             code = code.replace("\\n", "\n").replace("\\t", "\t")
+            self.add_log(f"save_code: Saving code with filename: {filename} and code: {code}")
             with open(filename, 'w') as f:
                 f.write(code)
+                self.add_log(f"save_code {filename} saved.")
+
+    def save_code(self, filename="code.txt", code=None):
+        self.add_log(f"save_code: Saving code with filename: {filename}")
+        code = self.get_code()
+        if code:
+            code = code.replace("\\n", "\n").replace("\\t", "\t")
+            self.add_log(f"save_code: Saving code with filename: {filename} and code: {code}")
+            with open(filename, 'w') as f:
+                f.write(code)
+                self.add_log(f"save_code {filename} saved.")
 
     def save_code_choices(self, filename):
         self.add_log(f"save_code_choices: Saving code choices with filename: {filename}")
+        
+        # Get the file extension.
+        fil_extension = filename.split('.')[-1]
+        file_name_without_ext = filename.split('.')[0]
+        
         for index, choice in enumerate(self.choices):
             choice_content = self.get_choice_content(index)
-            self.save_code("codes/"+filename+'_'+str(index), choice_content)
+            self.save_code("codes/"+file_name_without_ext+'_'+str(index+1)+fil_extension, choice_content)
     
     def run_code(self):
         code = self.get_code()
         if code:
             exec(code)
     
-    def get_links(self, data):
+    def get_links(self):
+        data = self.factualityQueries
         links = []
-        print("Get links '", end='\n')
-        print(data, end='\n')
-        print("'", end='\n')
-        if data is None:
+        self.add_log("get_links: Data: " + str(data))
+        if data is None or len(data) == 0:
+            self.add_log("get_links: Data is None.")
             return links
         try:
             for inner_list in data[0]:
@@ -159,8 +202,10 @@ class BardCoder:
                 if link:
                     links.append(link)
         except Exception as e:
-            self.add_log("Exception: " + str(e))
+            stack_trace = traceback.format_exc()
+            self.add_log(stack_trace)
             return links
+        self.add_log("get_links: Links: " + str(links))
         return links
 
     def save_file(self, filename, data):
