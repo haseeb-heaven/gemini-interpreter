@@ -1,6 +1,4 @@
-Sure, here is the Python code to print prime numbers from 1 to 50:
-
-```python
+python
 def is_prime(number):
   """Returns True if the number is a prime number, False otherwise."""
   if number <= 1:
@@ -18,25 +16,4 @@ for i in range(2, 51):
 
 print("The prime numbers from 1 to 50 are:")
 print(*primes)
-```
 
-This code will print the following output:
-
-```
-The prime numbers from 1 to 50 are:
-2
-3
-5
-7
-11
-13
-17
-19
-23
-29
-31
-37
-41
-43
-47
-```

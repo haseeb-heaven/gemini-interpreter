@@ -1,29 +1,29 @@
 {
-    "content": "Sure, here is the Python code to find the sum of all even numbers from 1 to N:\n\n```python\ndef sum_of_even_numbers(n):\n  sum = 0\n  for i in range(2, n + 1, 2):\n    sum += i\n  return sum\n```\n\nHere is an example of how to use the function:\n\n```python\nprint(sum_of_even_numbers(10))\n```\n\nThis will print the following output:\n\n```\n30\n```",
-    "conversation_id": "c_89c562522d798ed6",
-    "response_id": "r_89c562522d7987fc",
+    "content": "Sure, here is the Python code to print prime numbers from 1 to 50:\n\n```python\ndef is_prime(number):\n  \"\"\"Returns True if the number is a prime number, False otherwise.\"\"\"\n  if number <= 1:\n    return False\n  for i in range(2, number):\n    if number % i == 0:\n      return False\n  return True\n\n\nprimes = []\nfor i in range(2, 51):\n  if is_prime(i):\n    primes.append(i)\n\nprint(\"The prime numbers from 1 to 50 are:\")\nprint(*primes)\n```\n\nThis code will print the following output:\n\n```\nThe prime numbers from 1 to 50 are:\n2\n3\n5\n7\n11\n13\n17\n19\n23\n29\n31\n37\n41\n43\n47\n```",
+    "conversation_id": "c_2299c0aae3042ce2",
+    "response_id": "r_2299c0aae3042c6d",
     "factualityQueries": [],
     "textQuery": [
-        "python sum of all even numbers",
+        "Prime numbers from 1 to 50 in Python",
         1
     ],
     "choices": [
         {
-            "id": "rc_89c562522d798ffb",
+            "id": "rc_2299c0aae3042ef9",
             "content": [
-                "Sure, here is the Python code to find the sum of all even numbers from 1 to N:\n\n```python\ndef sum_of_even_numbers(n):\n  sum = 0\n  for i in range(2, n + 1, 2):\n    sum += i\n  return sum\n```\n\nHere is an example of how to use the function:\n\n```python\nprint(sum_of_even_numbers(10))\n```\n\nThis will print the following output:\n\n```\n30\n```"
+                "Sure, here is the Python code to print prime numbers from 1 to 50:\n\n```python\ndef is_prime(number):\n  \"\"\"Returns True if the number is a prime number, False otherwise.\"\"\"\n  if number <= 1:\n    return False\n  for i in range(2, number):\n    if number % i == 0:\n      return False\n  return True\n\n\nprimes = []\nfor i in range(2, 51):\n  if is_prime(i):\n    primes.append(i)\n\nprint(\"The prime numbers from 1 to 50 are:\")\nprint(*primes)\n```\n\nThis code will print the following output:\n\n```\nThe prime numbers from 1 to 50 are:\n2\n3\n5\n7\n11\n13\n17\n19\n23\n29\n31\n37\n41\n43\n47\n```"
             ]
         },
         {
-            "id": "rc_89c562522d7985b2",
+            "id": "rc_2299c0aae3042a56",
             "content": [
-                "Sure, here is the Python code to find the sum of all even numbers from 1 to 100:\n\n```python\ndef sum_even_numbers(n):\n  sum = 0\n  for i in range(2, n + 1, 2):\n    sum += i\n  return sum\n\nprint(sum_even_numbers(100))\n```\n\nThis code will print the following output:\n\n```\n5000\n```"
+                "Sure, here is the Python code to print prime numbers from 1 to 50:\n\n```python\ndef is_prime(n):\n  \"\"\"Returns True if n is a prime number, False otherwise.\"\"\"\n  if n <= 1:\n    return False\n  for i in range(2, n):\n    if n % i == 0:\n      return False\n  return True\n\n\nprimes = []\nfor i in range(2, 51):\n  if is_prime(i):\n    primes.append(i)\n\nprint(\"The prime numbers from 1 to 50 are:\")\nprint(*primes)\n```\n\nThis code will print the following output:\n\n```\nThe prime numbers from 1 to 50 are:\n2\n3\n5\n7\n11\n13\n17\n19\n23\n29\n31\n37\n41\n43\n47\n```"
             ]
         },
         {
-            "id": "rc_89c562522d798b69",
+            "id": "rc_2299c0aae30425b3",
             "content": [
-                "Sure, here is the Python code to find the sum of all even numbers from 1 to N:\n\n```python\ndef sum_of_even_numbers(n):\n  sum = 0\n  for i in range(2, n+1, 2):\n    sum += i\n  return sum\n```\n\nHere is an example of how to use the function:\n\n```python\nprint(sum_of_even_numbers(10))\n```\n\nThis will print the following output:\n\n```\n30\n```"
+                "Sure, here is the Python code to print prime numbers from 1 to 50:\n\n```python\ndef is_prime(number):\n  \"\"\"Returns True if the number is prime, False otherwise.\"\"\"\n  if number <= 1:\n    return False\n  for i in range(2, number):\n    if number % i == 0:\n      return False\n  return True\n\n\nprimes = []\nfor i in range(2, 51):\n  if is_prime(i):\n    primes.append(i)\n\nprint(\"The prime numbers from 1 to 50 are:\")\nprint(*primes)\n```\n\nThis code will print the following output:\n\n```\nThe prime numbers from 1 to 50 are:\n2\n3\n5\n7\n11\n13\n17\n19\n23\n29\n31\n37\n41\n43\n47\n```"
             ]
         }
     ]
