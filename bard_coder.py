@@ -8,6 +8,7 @@ import subprocess
 import time
 from os import path
 import extensions_map
+from extensions_map import get_file_extesion
 
 # set your __Secure-1PSID value to key
 # os.environ['_BARD_API_KEY']="XXXXXXXXXXXXXXXXXX"
@@ -30,7 +31,7 @@ class BardCoder:
                 self.enable_logs()
                 
             # Setups the logging.
-            self.logger = self.setup_logger("bardcoder.log")
+            self.logger = self.setup_logger("bard_coder.log")
             self.add_log("Init Starting ...")
             
         except Exception as e:
@@ -234,6 +235,8 @@ class BardCoder:
     def execute_code(self, filename):
         if filename:
             self.add_log(f"execute_code: Running {filename}")
+            output = self.run_code_exec(filename)
+            return output
             result = subprocess.run([self.code_runner_script, filename, "--debug"])
             # check output only if it was successful
             if result.returncode == 0: # 0 - success, 1 - failure
@@ -243,6 +246,76 @@ class BardCoder:
                 output = output.decode('utf-8')
                 return output
         return None
+    
+    
+    def run_code_exec(self,filename: str, debug: bool = False, cpp_version: str = "c++17"):
+        try:
+            compiler_map = {
+                ".c": ("gcc", "c"),
+                ".cpp": ("g++", "c++"),
+                ".java": ("javac", "java"),
+                ".go": ("go run", "go"),
+                ".cs": ("csc", "csharp"),
+                ".swift": ("swift", "swift"),
+                ".py": ("python3", "python"),
+                ".js": ("node", "javascript"),
+                ".rs": ("rustc", "rust")
+            }
+
+            _, extension = os.path.splitext(filename)
+            if extension not in compiler_map:
+                print("Error: Unsupported file type")
+                return
+
+            compiler, language = compiler_map[extension]
+
+            if language == "c++" and cpp_version.startswith("c++"):
+                version = cpp_version[3:]
+                if version in ["17", "14", "11", "0x"]:
+                    cpp_version = f"c++{version}"
+
+            if debug:
+                if language == "c++":
+                    print(f"Compiling {filename} with {compiler} (C++ {cpp_version})...")
+                else:
+                    print(f"Compiling {filename} with {compiler}...")
+
+            output = ""
+            if language == "c":
+                output = subprocess.check_output([compiler, filename, "-o", f"{filename[:-len(extension)]}"]).decode('utf-8')
+            elif language == "c++":
+                output = subprocess.check_output([compiler, filename, f"-std={cpp_version}", "-o", f"{filename[:-len(extension)]}"]).decode('utf-8')
+            elif language == "java":
+                output = subprocess.check_output([compiler, filename]).decode('utf-8')
+            elif language in ["go", "swift", "python", "javascript"]:
+                output = subprocess.check_output([compiler, filename]).decode('utf-8')
+            elif language == "csharp":
+                output = subprocess.check_output([compiler, f"/out:{filename[:-len(extension)]}.exe", filename]).decode('utf-8')
+            elif language == "rust":
+                output = subprocess.check_output([compiler, filename]).decode('utf-8')
+            else:
+                print("Error: Unsupported file type")
+                return
+
+            if debug:
+                print(f"Running {filename[:-len(extension)]}...")
+
+            if language == "java":
+                output += subprocess.check_output(["java", filename[:-len(extension)]]).decode('utf-8')
+            elif language == "go":
+                output += subprocess.check_output([compiler, filename]).decode('utf-8')
+            else:
+                output += subprocess.check_output([f"./{filename[:-len(extension)]}"]).decode('utf-8')
+
+            if debug:
+                print(f"Finished running {filename[:-len(extension)]}")
+        except Exception as e:
+            self.add_log(f"run_code_exec: Error: {e}")
+            stacktrace = traceback.format_exc()
+            self.add_log(f"run_code_exec: Stacktrace: {stacktrace}")
+            return None
+        return output
+
             
     """
         def execute_code_stdout_file_only(self, filename):
