@@ -12,27 +12,15 @@ import extensions_map
 # set your __Secure-1PSID value to key
 # os.environ['_BARD_API_KEY']="XXXXXXXXXXXXXXXXXX"
 
-"""
-Factorial of number using recursion in C++  only code no explanations.
-Sum of all numbers from 1 to 100  only code no explanations. in Java  only code no explanations.
-Prime numbers from 10 to 20  only code no explanations. in Go lang  only code no explanations.with main method to print output.
-Floyds triangle using for loop only code no explanations. in Swift  only code no explanations with main method to print output.
-Sum of all even numbers from 1 to 100 only code no explanations. in Python  only code no explanations.with main method to print output.
-Find string or int is palindrome in Rust  only code no explanations.with main method to print output.
-Write Prime series from 1 to 100 in C++  only code no explanations with main method to print output.
-Calculate the power of a number using recursion in Python only code no explanations.with main method to print output.
-Find the maximum and minimum element in an array using C++ only code no explanations.with main method to print output.
-"""
-
-
 class BardCoder:
     global bard
     global logger
     logs_enabled = False
     # define member variables for response_id, conversation_id, content, factualityQueries, textQuery, choices
-    response_id, conversation_id, content, factuality_queries, text_query, code_choices,code_extension = None, None, None, None, None, None,None
-
-    def __init__(self, prompt, enable_logs=False):
+    response_id, conversation_id, content, factuality_queries, text_query, code_choices, code_extension = None, None, None, None, None, None, None
+    code_runner_script = "./bash_src/CodeRunner.sh"
+    
+    def __init__(self,enable_logs=False):
         try:
             # Setting up Bard from BardAPI.
             self.bard = Bard(timeout=10)  # Set timeout in seconds
@@ -40,20 +28,26 @@ class BardCoder:
             # Enable logs
             if enable_logs:
                 self.enable_logs()
-
+                
             # Setups the logging.
-            self.logger = self.setup_logger('bardcoder.log')
+            self.logger = self.setup_logger("bardcoder.log")
             self.add_log("Init Starting ...")
-            self.add_log(f"Init: Prompt: {prompt}")
-
+            
+        except Exception as e:
+            print(str(e))
+            stack_trace = traceback.format_exc()
+            
+    
+    def set_prompt(self, prompt):
+        try:
             # Get the response from the prompt.
             response = self.get_response(prompt)
             if response:
-                # self.add_log(f"Init: Response: {response}")
+                # self.add_log(f"set_prompt: Response: {response}")
                 data = json.dumps(response, indent=4)
 
                 if data:
-                    # self.add_log(f"Init: Data: {data}")
+                    # self.add_log(f"set_prompt: Data: {data}")
 
                     # Getting the data from the response.
                     json_data = json.loads(data)
@@ -87,7 +81,7 @@ class BardCoder:
                                     f"Init: Factuality Query: {factualityQuery}")
                             # Get the links from the response.
                             links = self.get_links()
-                            self.add_log(f"Init: Links: {links}")
+                            self.add_log(f"set_prompt: Links: {links}")
 
                         # Get the text query from the response.
                         self.text_query = json_data['textQuery']
@@ -191,12 +185,14 @@ class BardCoder:
                 f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
             # Add extension to filename
-            extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
+            extension = extensions_map.get_file_extesion(
+                self.code_extenstion) or self.code_extenstion
             filename = filename + extension
 
             with open(filename, 'w') as f:
                 f.write(code)
                 self.add_log(f"save_code {filename} saved.")
+                return filename
 
     def save_code(self, filename="code.txt", code='print("Hello World")'):
         self.add_log(f"save_code: Saving code with filename: {filename}")
@@ -210,12 +206,14 @@ class BardCoder:
                     f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
                 # Add extension to filename
-                extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
+                extension = extensions_map.get_file_extesion(
+                    self.code_extenstion) or self.code_extenstion
                 filename = filename + extension
 
                 with open(filename, 'w') as f:
                     f.write(code)
                     self.add_log(f"save_code {filename} saved.")
+                    return filename
 
     def save_code_choices(self, filename):
         self.add_log(
@@ -223,31 +221,53 @@ class BardCoder:
         extension = self.get_code_extension()
         if extension:
             self.code_extension = '.' + extension
-            self.code_extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
-            
+            self.code_extension = extensions_map.get_file_extesion(
+                self.code_extenstion) or self.code_extenstion
+
             for index, choice in enumerate(self.code_choices):
                 choice_content = self.get_code_choice(index)
                 self.add_log(
                     f"save_code_choices: Enumurated Choice content: {choice}")
-                self.save_file("codes/"+filename+'_'+str(index+1) +self.code_extension, choice_content)
+                self.save_file("codes/"+filename+'_'+str(index+1) +
+                               self.code_extension, choice_content)
 
-    def run_code(self, filename):
+    def execute_code(self, filename):
         if filename:
-            self.add_log(f"run_code: Running {filename}")
-            subprocess.run(["./CodeRunner.sh", filename, "--debug"])
+            self.add_log(f"execute_code: Running {filename}")
+            result = subprocess.run([self.code_runner_script, filename, "--debug"])
+            # check output only if it was successful
+            if result.returncode == 0: # 0 - success, 1 - failure
+                output = subprocess.check_output([self.code_runner_script,filename, "--debug"])
+                self.add_log(f"execute_code: Output: {output}")
+                # Convert output from bytes to string
+                output = output.decode('utf-8')
+                return output
+        return None
+            
+    """
+        def execute_code_stdout_file_only(self, filename):
+        if filename:
+            self.add_log(f"execute_code: Running {filename}")
+            result = subprocess.run([self.code_runner_script, filename, "--debug"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = result.stdout.decode('utf-8')
+            error = result.stderr.decode('utf-8')
+            self.add_log(f"execute_code: Output: {output}")
+            self.add_log(f"execute_code: Error: {error}")
+    """
 
-    def run_code_choices(self):
+    def execute_code_choices(self):
         for filename in os.listdir('codes'):
             filepath = path.join('codes', filename)
-            self.add_log(f"run_code_choices: Running {filepath}")
-            self.run_code(filepath)
+            self.add_log(f"execute_code_choices: Running {filepath}")
+            self.execute_code(filepath)
             time.sleep(5)
 
     def get_code_extension(self):
         try:
             code_content = self.content
             if code_content and not code_content in "can't help":
-                self.code_extension = code_content.split('```')[1].split('\n')[0]
+                self.code_extension = code_content.split('```')[
+                    1].split('\n')[0]
                 self.add_log(
                     f"get_code_extension: Code extension: {self.code_extension}")
                 return self.code_extension

@@ -33,6 +33,14 @@ elif [[ $filename == *.py ]]; then
   extension=".py"
   compiler="python3"
   language="python"
+elif [[ $filename == *.js ]]; then
+  extension=".js"
+  compiler="node"
+  language="javascript"
+elif [[ $filename == *.rs ]]; then
+  extension=".rs"
+  compiler="rustc"
+  language="rust"
 else
   echo "Error: Unsupported file type"
   exit 1
@@ -72,6 +80,10 @@ elif [ $language == "csharp" ]; then
 elif [ $language == "swift" ]; then
   $compiler $filename
 elif [ $language == "python" ]; then
+  $compiler $filename
+elif [ $language == "javascript" ]; then
+  $compiler $filename
+elif [ $language == "rust" ]; then
   $compiler $filename
 else
   echo "Error: Unsupported file type"

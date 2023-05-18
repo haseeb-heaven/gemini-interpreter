@@ -1,5 +1,4 @@
-# Create map for file exstensions of coding languages. with 1st key as language name and 2nd key as file extension and make them small letters. like ".python", ".py" remmber . dot is there always.
-
+# Define a dictionary to map language name to file extension
 extension_map = {
     ".python": ".py",
     ".javascript": ".js",
@@ -27,9 +26,7 @@ extension_map = {
     ".ocaml": ".ml",
 }
     
-
-
-# create method to get file extension from language name
+# Method to get file extension from language name
 def get_file_extesion(language):
     # make language name small letters
     language = language.lower()
