@@ -1,3 +1,4 @@
+from os import path
 from bardcoder import BardCoder,traceback,json
 
 if __name__ == "__main__":
@@ -9,13 +10,13 @@ if __name__ == "__main__":
         # Get the code from the response.
         code = bard_coder.get_code()
         
-        filename = "code_generated.py"
+        filename = path.join("codes","code_generated")
         # Save the code to file
         bard_coder.save_code(filename,code)
         print(f"Code saved to file {filename}")
         
         # Save all the code choices to file
-        bard_coder.save_code_choices("code_choice.py")
+        bard_coder.save_code_choices("code_choice")
         
         # Print the links
         links = bard_coder.get_links()
