@@ -4,6 +4,10 @@ import os
 import json
 from bardapi import Bard
 import traceback
+import subprocess
+import time
+from os import path
+import extensions_map
 
 # set your __Secure-1PSID value to key
 # os.environ['_BARD_API_KEY']="XXXXXXXXXXXXXXXXXX"
@@ -11,13 +15,13 @@ import traceback
 """
 Factorial of number using recursion in C++  only code no explanations.
 Sum of all numbers from 1 to 100  only code no explanations. in Java  only code no explanations.
-Prime numbers from 10 to 20  only code no explanations. in Go lang  only code no explanations.
-Floyds triangle using for loop only code no explanations. in Swift  only code no explanations.
-Sum of all even numbers only code no explanations. in Python  only code no explanations.
-Find string or int is palindrome in Rust  only code no explanations.
-Write Fibonacci series from 1 to 100 in C++  only code no explanations.
-Calculate the power of a number using recursion in Python only code no explanations.
-Find the maximum and minimum element in an array using C++ only code no explanations.
+Prime numbers from 10 to 20  only code no explanations. in Go lang  only code no explanations.with main method to print output.
+Floyds triangle using for loop only code no explanations. in Swift  only code no explanations with main method to print output.
+Sum of all even numbers from 1 to 100 only code no explanations. in Python  only code no explanations.with main method to print output.
+Find string or int is palindrome in Rust  only code no explanations.with main method to print output.
+Write Prime series from 1 to 100 in C++  only code no explanations with main method to print output.
+Calculate the power of a number using recursion in Python only code no explanations.with main method to print output.
+Find the maximum and minimum element in an array using C++ only code no explanations.with main method to print output.
 """
 
 
@@ -26,7 +30,7 @@ class BardCoder:
     global logger
     logs_enabled = False
     # define member variables for response_id, conversation_id, content, factualityQueries, textQuery, choices
-    response_id, conversation_id, content, factuality_queries, text_query, code_choices = None, None, None, None, None, None
+    response_id, conversation_id, content, factuality_queries, text_query, code_choices,code_extension = None, None, None, None, None, None,None
 
     def __init__(self, prompt, enable_logs=False):
         try:
@@ -180,14 +184,15 @@ class BardCoder:
 
     def save_code(self, filename="code.txt"):
         code = self.get_code()
-        code_extenstion = '.' + self.get_code_extension()
+        self.code_extenstion = '.' + self.get_code_extension()
         if code:
             code = code.replace("\\n", "\n").replace("\\t", "\t")
             self.add_log(
-                f"save_code: Saving code with filename: {filename} and extension: {code_extenstion} and code: {code}")
+                f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
             # Add extension to filename
-            filename = filename + code_extenstion
+            extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
+            filename = filename + extension
 
             with open(filename, 'w') as f:
                 f.write(code)
@@ -195,46 +200,60 @@ class BardCoder:
 
     def save_code(self, filename="code.txt", code='print("Hello World")'):
         self.add_log(f"save_code: Saving code with filename: {filename}")
+        extension = self.get_code_extension()
+        if extension:
+            self.code_extenstion = '.' + extension
+            code = self.get_code()
+            if code:
+                code = code.replace("\\n", "\n").replace("\\t", "\t")
+                self.add_log(
+                    f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
-        code_extenstion = '.' + self.get_code_extension()
-        code = self.get_code()
-        if code:
-            code = code.replace("\\n", "\n").replace("\\t", "\t")
-            self.add_log(
-                f"save_code: Saving code with filename: {filename} and extension: {code_extenstion} and code: {code}")
+                # Add extension to filename
+                extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
+                filename = filename + extension
 
-            # Add extension to filename
-            filename = filename + code_extenstion
-
-            with open(filename, 'w') as f:
-                f.write(code)
-                self.add_log(f"save_code {filename} saved.")
+                with open(filename, 'w') as f:
+                    f.write(code)
+                    self.add_log(f"save_code {filename} saved.")
 
     def save_code_choices(self, filename):
         self.add_log(
             f"save_code_choices: Saving code choices with filename: {filename}")
-        code_extension = '.' + self.get_code_extension()
+        extension = self.get_code_extension()
+        if extension:
+            self.code_extension = '.' + extension
+            self.code_extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
+            
+            for index, choice in enumerate(self.code_choices):
+                choice_content = self.get_code_choice(index)
+                self.add_log(
+                    f"save_code_choices: Enumurated Choice content: {choice}")
+                self.save_file("codes/"+filename+'_'+str(index+1) +self.code_extension, choice_content)
 
-        for index, choice in enumerate(self.code_choices):
-            choice_content = self.get_code_choice(index)
-            self.add_log(
-                f"save_code_choices: Enumurated Choice content: {choice}")
-            self.save_file("codes/"+filename+'_'+str(index+1) +
-                           code_extension, choice_content)
+    def run_code(self, filename):
+        if filename:
+            self.add_log(f"run_code: Running {filename}")
+            subprocess.run(["./CodeRunner.sh", filename, "--debug"])
 
-    def run_code(self):
-        code = self.get_code()
-        if code:
-            exec(code)
+    def run_code_choices(self):
+        for filename in os.listdir('codes'):
+            filepath = path.join('codes', filename)
+            self.add_log(f"run_code_choices: Running {filepath}")
+            self.run_code(filepath)
+            time.sleep(5)
 
     def get_code_extension(self):
-        code_content = self.content
-        code_extension = ""
-        if code_content:
-            code_extension = code_content.split('```')[1].split('\n')[0]
-            self.add_log(
-                f"get_code_extension: Code extension: {code_extension}")
-            return code_extension
+        try:
+            code_content = self.content
+            if code_content and not code_content in "can't help":
+                self.code_extension = code_content.split('```')[1].split('\n')[0]
+                self.add_log(
+                    f"get_code_extension: Code extension: {self.code_extension}")
+                return self.code_extension
+        except Exception as e:
+            stack_trace = traceback.format_exc()
+            self.add_log(stack_trace)
         return None
 
     def get_links(self):

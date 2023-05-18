@@ -1,6 +1,7 @@
 from os import path
 from bardcoder import BardCoder,traceback,json
 
+
 if __name__ == "__main__":
     try:
         # set your input text
@@ -22,8 +23,9 @@ if __name__ == "__main__":
         links = bard_coder.get_links()
         if links:
             print(f"Links: {links}")
-        
-        
+            
+        # Run all the code and code choices.
+        bard_coder.run_code_choices()
     except Exception as e:
         # print the stack trace
         stack_trace = traceback.format_exc()
