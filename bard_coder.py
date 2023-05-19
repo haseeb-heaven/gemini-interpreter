@@ -193,7 +193,7 @@ class BardCoder:
             with open(filename, 'w') as f:
                 f.write(code)
                 self.add_log(f"save_code {filename} saved.")
-                return filename
+            return filename
 
     def save_code(self, filename="code.txt", code='print("Hello World")'):
         self.add_log(f"save_code: Saving code with filename: {filename}")
@@ -214,7 +214,7 @@ class BardCoder:
                 with open(filename, 'w') as f:
                     f.write(code)
                     self.add_log(f"save_code {filename} saved.")
-                    return filename
+                return filename
 
     def save_code_choices(self, filename):
         self.add_log(
@@ -236,6 +236,7 @@ class BardCoder:
         if filename:
             self.add_log(f"execute_code: Running {filename}")
             output = self.run_code_exec(filename)
+            self.add_log(f"execute_code: Output: {output}")
             return output
             result = subprocess.run([self.code_runner_script, filename, "--debug"])
             # check output only if it was successful
@@ -247,74 +248,89 @@ class BardCoder:
                 return output
         return None
     
-    
-    def run_code_exec(self,filename: str, debug: bool = False, cpp_version: str = "c++17"):
+
+
+    def run_code_exec(self, filename: str, debug: bool = False, cpp_version: str = "c++17"):
+        compiler_map = {
+            ".c": ("gcc", "c"),
+            ".cpp": ("g++", "c++"),
+            ".java": ("javac", "java"),
+            ".go": ("go run", "go"),
+            ".cs": ("csc", "csharp"),
+            ".swift": ("swift", "swift"),
+            ".py": ("python3", "python"),
+            ".js": ("node", "javascript"),
+            ".rs": ("rustc", "rust")
+        }
+
+        _, extension = os.path.splitext(filename)
+        self.add_log(f"run_code_exec: Extension: {extension}")
+        if extension not in compiler_map:
+            print("Error: Unsupported file type")
+            return
+
+        compiler, language = compiler_map[extension]
+        self.add_log(f"run_code_exec: Compiler: {compiler}")
+
+        if language == "c++" and cpp_version.startswith("c++"):
+            version = cpp_version[3:]
+            if version in ["17", "14", "11", "0x"]:
+                cpp_version = f"c++{version}"
+
+        if debug:
+            if language == "c++":
+                print(f"Compiling {filename} with {compiler} (C++ {cpp_version})...")
+            else:
+                print(f"Compiling {filename} with {compiler}...")
+
+        output = ""
         try:
-            compiler_map = {
-                ".c": ("gcc", "c"),
-                ".cpp": ("g++", "c++"),
-                ".java": ("javac", "java"),
-                ".go": ("go run", "go"),
-                ".cs": ("csc", "csharp"),
-                ".swift": ("swift", "swift"),
-                ".py": ("python3", "python"),
-                ".js": ("node", "javascript"),
-                ".rs": ("rustc", "rust")
-            }
-
-            _, extension = os.path.splitext(filename)
-            if extension not in compiler_map:
-                print("Error: Unsupported file type")
-                return
-
-            compiler, language = compiler_map[extension]
-
-            if language == "c++" and cpp_version.startswith("c++"):
-                version = cpp_version[3:]
-                if version in ["17", "14", "11", "0x"]:
-                    cpp_version = f"c++{version}"
-
-            if debug:
-                if language == "c++":
-                    print(f"Compiling {filename} with {compiler} (C++ {cpp_version})...")
-                else:
-                    print(f"Compiling {filename} with {compiler}...")
-
-            output = ""
             if language == "c":
-                output = subprocess.check_output([compiler, filename, "-o", f"{filename[:-len(extension)]}"]).decode('utf-8')
+                output = subprocess.check_output([compiler, filename, "-o", f"{filename[:-len(extension)]}"], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "c++":
-                output = subprocess.check_output([compiler, filename, f"-std={cpp_version}", "-o", f"{filename[:-len(extension)]}"]).decode('utf-8')
+                output = subprocess.check_output([compiler, filename, f"-std={cpp_version}", "-o", f"{filename[:-len(extension)]}"], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "java":
-                output = subprocess.check_output([compiler, filename]).decode('utf-8')
+                output = subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
             elif language in ["go", "swift", "python", "javascript"]:
-                output = subprocess.check_output([compiler, filename]).decode('utf-8')
+                output = subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "csharp":
-                output = subprocess.check_output([compiler, f"/out:{filename[:-len(extension)]}.exe", filename]).decode('utf-8')
+                output = subprocess.check_output([compiler, f"/out:{filename[:-len(extension)]}.exe", filename], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "rust":
-                output = subprocess.check_output([compiler, filename]).decode('utf-8')
+                output = subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
             else:
                 print("Error: Unsupported file type")
                 return
+            self.add_log(f"run_code_exec: Output: {output}")
+        except subprocess.CalledProcessError as e:
+            output += e.output.decode('utf-8')
+            self.add_log(f"run_code_exec: Error: {output}")
 
-            if debug:
-                print(f"Running {filename[:-len(extension)]}...")
+        if debug:
+            print(f"Running {filename[:-len(extension)]}...")
 
+        try:
             if language == "java":
-                output += subprocess.check_output(["java", filename[:-len(extension)]]).decode('utf-8')
+                output += subprocess.check_output(["java", filename[:-len(extension)]], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "go":
-                output += subprocess.check_output([compiler, filename]).decode('utf-8')
+                output += subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
             else:
-                output += subprocess.check_output([f"./{filename[:-len(extension)]}"]).decode('utf-8')
+                self.add_log(f"run_code_exec: Running file {filename} with extension {extension} with command: {f'./{filename[:-len(extension)]}'}")
+                output += subprocess.check_output([f"./{filename[:-len(extension)]}"], stderr=subprocess.STDOUT).decode('utf-8')
+        except (subprocess.CalledProcessError, Exception) as e:
+            if isinstance(e, subprocess.CalledProcessError):
+                output += e.output.decode('utf-8')
+            else:
+                output += str(e)
+            self.add_log(f"run_code_exec: Error: {output}")
+        
 
-            if debug:
-                print(f"Finished running {filename[:-len(extension)]}")
-        except Exception as e:
-            self.add_log(f"run_code_exec: Error: {e}")
-            stacktrace = traceback.format_exc()
-            self.add_log(f"run_code_exec: Stacktrace: {stacktrace}")
-            return None
+        if debug:
+            print(f"Finished running {filename[:-len(extension)]}")
+
+        self.add_log(f"run_code_exec: Output: {output}")
         return output
+
+
 
             
     """
@@ -380,7 +396,7 @@ class BardCoder:
         if self.logs_enabled:
             self.logger.log(level, log)
         else:
-            self.logger = self.setup_logger('bardcoder.log')
+            self.logger = self.setup_logger('bard_coder.log')
             self.logger.log(level, log)
 
     def enable_logs(self):

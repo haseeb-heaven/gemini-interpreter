@@ -4,7 +4,7 @@
 rm -rf codes/*
 
 # clearing response files and logs
-truncate -s 0 bardcoder.log
+truncate -s 0 bard_coder.log
 truncate -s 0 response/content.md
 truncate -s 0 response/response.json
 
