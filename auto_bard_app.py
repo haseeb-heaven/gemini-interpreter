@@ -34,7 +34,7 @@ def show_output(message):
 def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
     try:
         # Additional prompt for class clarification.
-        prompt += "\n" + "Name the class code_generated for Java and C# languages."
+        prompt += "\n" + f"Note: The Name the class should be {code_file} if Java and C# languages is selected"
         
         # Additional prompt for no input clarification.
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
@@ -54,7 +54,7 @@ def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_c
         show_output("Executing primary code")
         code_output = bard_coder.execute_code(saved_file)
         if code_output and code_output != None and code_output.__len__() > 0:
-            if 'error:' in code_output.lower():
+            if 'error' in code_output.lower() or 'exception' in code_output.lower():
                 show_output(f"Error in executing code with exec_type {exec_type}")
                 return code_output, saved_file, False
 
@@ -95,9 +95,11 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
     
     # Append the codes directory to filename
     code_file = path.join("codes",code_file)
-    
+    test_cases_output = 0 # Test cases for output.
+        
     # Start the bard coder process
     code_choices_output, saved_file, status = auto_bard_execute_process(prompt, code_file, code_choices, expected_output, exec_type)
+    code_output = None
     
     if status:
         show_output(f"Expected output found in file {saved_file}\nOutput: {code_choices_output}")
@@ -106,7 +108,7 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
         if code_choices_output:
             code_output = ''.join(code_choices_output)
         if code_output and code_output != None and code_output.__len__() > 0:
-            test_cases_output = 0 # Test cases for output.
+
             # Check for errors like 'error' or 'Error' check case sensitivity and add more error checks.
             if code_output is not None:
                 code_output = "".join(code_output)
@@ -114,7 +116,7 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
                 code_output = ""
                 
             if code_output:
-                while 'error' in code_output.lower():
+                while 'error' in code_output.lower() or 'exception' in code_output.lower():
                     show_output(f"Error in executing code,Trying to fix the code with error")
 
                     # Re-prompt on error.
@@ -153,31 +155,23 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
                 show_output(f"Code has been fixed for expected output")
                 st.code(code_output, language="python")
             else:
-                show_output("Not checking for code expected output")
-            
-            # Print output and information.
-            measure_accuracy(test_cases_output)
-            
-            #code_genrated = bard_coder.get_code()
-            #code_language = get_streamlit_code_lang('.'+bard_coder.get_code_extension())
-            #st.code(code_genrated, language=code_language)
-            # Display the messages in a code block
-            #st.code(messages, language="python")
-            
-            content_file = "response/content.md"
-            show_content(content_file)
-            
+                show_output("Not checking for code expected output")            
         else:
             show_output("Code output is empty for error")
+        
+    # Print output and information.
+    measure_accuracy(test_cases_output)            
+    content_file = "response/content.md"
+    show_content(content_file)
 
 
 if __name__ == "__main__":
 
-    st.title("Coder - Generator")
+    st.title("AutoBard - Coder Generator")
     prompt = st.text_area("Enter your prompt here:")
     
     with st.expander("Options"):
-        code_file = st.text_input("Enter the filename for the generated code (without extension):", value="code_generator")
+        code_file = st.text_input("Enter the filename for the generated code (without extension):", value="generated_code")
         code_choices = st.text_input("Enter the filename for code choices:", value="code_choices")
         expected_output = st.text_input("Enter the expected output (leave blank if none):")
         exec_type = st.selectbox("Select execution type:", ["single", "multiple"], index=0)
