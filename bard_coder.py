@@ -373,10 +373,8 @@ class BardCoder:
         try:
             code_content = self.content
             if code_content and not code_content in "can't help":
-                self.code_extension = code_content.split('```')[
-                    1].split('\n')[0]
-                self.add_log(
-                    f"get_code_extension: Code extension: {self.code_extension}")
+                self.code_extension = code_content.split('```')[1].split('\n')[0]
+                self.add_log(f"get_code_extension: Code extension: {self.code_extension}")
                 return self.code_extension
         except Exception as e:
             stack_trace = traceback.format_exc()
