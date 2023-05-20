@@ -35,7 +35,7 @@ class BardCoder:
             self.add_log("Init Starting ...")
             
         except Exception as e:
-            print(str(e))
+            self.add_log(str(e))
             stack_trace = traceback.format_exc()
             
     
@@ -107,7 +107,7 @@ class BardCoder:
                     self.add_log("Init: Data is empty.")
 
         except Exception as e:
-            # print stack trace
+            # self.add_log stack trace
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
             self.add_log(str(e))
@@ -154,17 +154,29 @@ class BardCoder:
         return logging.getLogger(__name__)
 
     def get_code(self):
-        if self.content:
-            self.add_log("get_code: Getting code from content.")
-            data = self.content
-            start_index = data.find("```") + 3
-            end_index = data.find("```", start_index)
-            extracted_data = data[start_index:end_index]
-            result = extracted_data.strip()
-            # Remove the code language identifier
-            result = result[result.find('\n') + 1:]
-            self.add_log(f"get_code: Code: {result}")
-            return result
+        try:
+            if self.content:
+                self.add_log("get_code: Getting code from content.")
+                
+                data = self.content
+                start_index = data.find("```")
+                if start_index == -1:
+                    return None
+                start_index += 3
+                end_index = data.find("```", start_index)
+                if end_index == -1:
+                    return None
+                extracted_data = data[start_index:end_index]
+                result = extracted_data.strip()
+                
+                # Remove the code language identifier
+                result = result[result.find('\n') + 1:]
+                self.add_log(f"get_code: Code: {result}")
+                return result
+        except Exception as e:
+            self.add_log(str(e))
+            stack_trace = traceback.format_exc()
+            self.add_log(stack_trace)
 
     def get_codey(self):
         if self.content:
@@ -182,12 +194,10 @@ class BardCoder:
         self.code_extenstion = '.' + self.get_code_extension()
         if code:
             code = code.replace("\\n", "\n").replace("\\t", "\t")
-            self.add_log(
-                f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
+            self.add_log(f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
             # Add extension to filename
-            extension = extensions_map.get_file_extesion(
-                self.code_extenstion) or self.code_extenstion
+            extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
             filename = filename + extension
 
             with open(filename, 'w') as f:
@@ -195,20 +205,19 @@ class BardCoder:
                 self.add_log(f"save_code {filename} saved.")
             return filename
 
-    def save_code(self, filename="code.txt", code='print("Hello World")'):
+    def save_code(self, filename="code.txt", code='self.add_log("Hello World")'):
         self.add_log(f"save_code: Saving code with filename: {filename}")
         extension = self.get_code_extension()
         if extension:
             self.code_extenstion = '.' + extension
-            code = self.get_code()
+            #code = self.get_code()
             if code:
                 code = code.replace("\\n", "\n").replace("\\t", "\t")
                 self.add_log(
                     f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
                 # Add extension to filename
-                extension = extensions_map.get_file_extesion(
-                    self.code_extenstion) or self.code_extenstion
+                extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
                 filename = filename + extension
 
                 with open(filename, 'w') as f:
@@ -222,8 +231,7 @@ class BardCoder:
         extension = self.get_code_extension()
         if extension:
             self.code_extension = '.' + extension
-            self.code_extension = extensions_map.get_file_extesion(
-                self.code_extenstion) or self.code_extenstion
+            self.code_extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
 
             for index, choice in enumerate(self.code_choices):
                 choice_content = self.get_code_choice(index)
@@ -254,7 +262,7 @@ class BardCoder:
         compiler_map = {
             ".c": ("gcc", "c"),
             ".cpp": ("g++", "c++"),
-            ".java": ("javac", "java"),
+            ".java": ("java", "java"),
             ".go": ("go run", "go"),
             ".cs": ("csc", "csharp"),
             ".swift": ("swift", "swift"),
@@ -266,7 +274,7 @@ class BardCoder:
         _, extension = os.path.splitext(filename)
         self.add_log(f"run_code_exec: Extension: {extension}")
         if extension not in compiler_map:
-            print("Error: Unsupported file type")
+            self.add_log(f"run_code_exec: Extension {extension} not supported.")
             return
 
         compiler, language = compiler_map[extension]
@@ -276,12 +284,13 @@ class BardCoder:
             version = cpp_version[3:]
             if version in ["17", "14", "11", "0x"]:
                 cpp_version = f"c++{version}"
+                self.add_log(f"run_code_exec: C++ Version: {cpp_version}")
 
         if debug:
             if language == "c++":
-                print(f"Compiling {filename} with {compiler} (C++ {cpp_version})...")
+                 self.add_log(f"Compiling {filename} with {compiler} (C++ {cpp_version})...")
             else:
-                print(f"Compiling {filename} with {compiler}...")
+                 self.add_log(f"Compiling {filename} with {compiler}...")
 
         output = ""
         try:
@@ -291,14 +300,14 @@ class BardCoder:
                 output = subprocess.check_output([compiler, filename, f"-std={cpp_version}", "-o", f"{filename[:-len(extension)]}"], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "java":
                 output = subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
-            elif language in ["go", "swift", "python", "javascript"]:
+            elif language in ["go", "swift", "python", "javascript","java"]:
                 output = subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "csharp":
                 output = subprocess.check_output([compiler, f"/out:{filename[:-len(extension)]}.exe", filename], stderr=subprocess.STDOUT).decode('utf-8')
             elif language == "rust":
                 output = subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
             else:
-                print("Error: Unsupported file type")
+                self.add_log("Error: Unsupported file type")
                 return
             self.add_log(f"run_code_exec: Output: {output}")
         except subprocess.CalledProcessError as e:
@@ -306,26 +315,30 @@ class BardCoder:
             self.add_log(f"run_code_exec: Error: {output}")
 
         if debug:
-            print(f"Running {filename[:-len(extension)]}...")
+            self.add_log(f"Running {filename[:-len(extension)]}...")
 
+        # Checking further output for syntax ./path/filename to run the executable
         try:
-            if language == "java":
-                output += subprocess.check_output(["java", filename[:-len(extension)]], stderr=subprocess.STDOUT).decode('utf-8')
-            elif language == "go":
-                output += subprocess.check_output([compiler, filename], stderr=subprocess.STDOUT).decode('utf-8')
+            # run C# with mono command. like this mono ./path/filename.exe
+            if language == "csharp":
+                output_file_exec = f"{filename[:-len(extension)]}.exe"
+                output += subprocess.check_output(['mono',output_file_exec], stderr=subprocess.STDOUT).decode('utf-8')
+            
             else:
-                self.add_log(f"run_code_exec: Running file {filename} with extension {extension} with command: {f'./{filename[:-len(extension)]}'}")
-                output += subprocess.check_output([f"./{filename[:-len(extension)]}"], stderr=subprocess.STDOUT).decode('utf-8')
+                output_file_exec = f"./{filename[:-len(extension)]}"
+                # checking if file exists output_file_exec
+                if os.path.isfile(output_file_exec):
+                    output += subprocess.check_output([output_file_exec], stderr=subprocess.STDOUT).decode('utf-8')
         except (subprocess.CalledProcessError, Exception) as e:
             if isinstance(e, subprocess.CalledProcessError):
-                output += e.output.decode('utf-8')
+                output += '\n' + e.output.decode('utf-8')
             else:
-                output += str(e)
+                output += '\n' + str(e)
             self.add_log(f"run_code_exec: Error: {output}")
         
 
         if debug:
-            print(f"Finished running {filename[:-len(extension)]}")
+            self.add_log(f"Finished running {filename[:-len(extension)]}")
 
         self.add_log(f"run_code_exec: Output: {output}")
         return output
@@ -345,11 +358,16 @@ class BardCoder:
     """
 
     def execute_code_choices(self):
+        self.add_log("execute_code_choices: Running codes")
+        codes_choices_output = list()
         for filename in os.listdir('codes'):
             filepath = path.join('codes', filename)
             self.add_log(f"execute_code_choices: Running {filepath}")
-            self.execute_code(filepath)
+            output = self.execute_code(filepath)
+            if output:
+                codes_choices_output.append(output)
             time.sleep(5)
+        return codes_choices_output
 
     def get_code_extension(self):
         try:

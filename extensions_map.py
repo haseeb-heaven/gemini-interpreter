@@ -33,5 +33,5 @@ def get_file_extesion(language):
     # get file extension from ext_map
     file_extension = extension_map.get(language)
     # return file extension
-    print(f"get_file_extesion: Language: {language} File Extension: {file_extension}")
+    #print(f"get_file_extesion: Language: {language} File Extension: {file_extension}")
     return file_extension
