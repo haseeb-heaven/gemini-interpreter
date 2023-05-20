@@ -1,3 +1,16 @@
+"""
+Details : AutoBard-Coder is code genrator for bard. It is used to generate code from bard response.
+its using Bard API to interact with bard and refine the results for coding purpose.
+The main purpose of this is for research and educational purpose.
+This is using unofficial bard api and not affiliated with bard in any way.
+This can generate the code from prompt and fix itself unless the code is fixed.
+Language : Python
+Author : HeavenHM.
+License : MIT
+Date : 21-05-2023
+"""
+
+# Import the required libraries
 import streamlit as st
 from os import path
 import time
@@ -9,6 +22,7 @@ import subprocess
 # Initialize the bard coder
 bard_coder = BardCoder(enable_logs=True)
 
+# Function to measure the accuracy of the code
 def measure_accuracy(counter):
     accuracy = 1 / (counter + 1)
     accuracy_percentage = accuracy * 100
@@ -31,6 +45,7 @@ def show_output(message):
     messages += message + "\n"
     log_container.code(messages, language="python")
 
+# method to execute the bard coder process
 def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
     try:
         # Additional prompt for class clarification.
@@ -91,6 +106,7 @@ def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_c
         show_output(stack_trace)
         show_output(str(e))
 
+# method to execute the bard coder process
 def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
     
     # Append the codes directory to filename
@@ -166,23 +182,32 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
 
 
 if __name__ == "__main__":
-
-    st.title("AutoBard - Coder Generator")
+    # Set the page title and description
+    st.title("AutoBard - Code Generator")
     prompt = st.text_area("Enter your prompt here:")
+    bard_api_key = ""
     
+    # Setting options for the application
     with st.expander("Options"):
-        code_file = st.text_input("Enter the filename for the generated code (without extension):", value="generated_code")
-        code_choices = st.text_input("Enter the filename for code choices:", value="code_choices")
-        expected_output = st.text_input("Enter the expected output (leave blank if none):")
-        exec_type = st.selectbox("Select execution type:", ["single", "multiple"], index=0)
-        rate_limiter_delay = st.number_input("Enter rate limiter delay (in seconds):", value=5)
+        code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
+        code_choices = st.text_input("Filename for code choices:", value="code_choices")
+        expected_output = st.text_input("Expected output (leave blank if none):")
+        exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
+        rate_limiter_delay = st.number_input("Rate limiter delay (in seconds):", value=5)
 
+    # Setting the settings for the application    
+    with st.expander("Settings"):
+        bard_api_key = st.text_input("Bard API key:", type="password")
+        if bard_api_key:
+            bard_coder.set_api_key(bard_api_key)
+    
+    # Seting application to run
     if st.button("Run"):
-        # call shell script named bash_src/clear_cache.sh using subprocess module
+        # Clear the previous cache.
         st.code("Running the code generator", language="python")
         subprocess.call(['bash', 'bash_src/clear_cache.sh'])
+        
+        # Run the auto bard setup process.
         log_container = st.empty()
         auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
-
-
 

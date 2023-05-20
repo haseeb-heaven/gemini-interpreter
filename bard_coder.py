@@ -1,3 +1,14 @@
+"""
+Details : BardCoder is code genrator for bard. It is used to generate code from bard response.
+its using Bard API to interact with bard and refine the results for coding purpose.
+The main purpose of this is to integrate bard with any projects and make code generation easy.
+Language : Python
+Author : HeavenHM.
+License : MIT
+Date : 21-05-2023
+"""
+
+# import libraries
 import json
 import logging
 import os
@@ -10,21 +21,25 @@ from os import path
 import extensions_map
 from extensions_map import get_file_extesion
 
-# set your __Secure-1PSID value to key
-# os.environ['_BARD_API_KEY']="XXXXXXXXXXXXXXXXXX"
-
 class BardCoder:
     global bard
     global logger
     logs_enabled = False
-    # define member variables for response_id, conversation_id, content, factualityQueries, textQuery, choices
     response_id, conversation_id, content, factuality_queries, text_query, code_choices, code_extension = None, None, None, None, None, None, None
     code_runner_script = "./bash_src/CodeRunner.sh"
     
-    def __init__(self,enable_logs=False):
-        try:
+    def __init__(self, timeout=10, enable_logs=False):
+            # call another constructor
+            self.__init__(None, timeout, enable_logs)
+    
+    # Initial setup
+    def __init__(self,api_key=None,timeout=10,enable_logs=False):
+        try: 
+            # Setting up the api key.
+            self.set_api_key(api_key)
+                
             # Setting up Bard from BardAPI.
-            self.bard = Bard(timeout=10)  # Set timeout in seconds
+            self.bard = Bard(timeout=timeout)  # Set timeout in seconds
 
             # Enable logs
             if enable_logs:
@@ -37,19 +52,21 @@ class BardCoder:
         except Exception as e:
             self.add_log(str(e))
             stack_trace = traceback.format_exc()
-            
     
+    # Set the api key
+    def set_api_key(self, api_key):
+        if api_key:
+            os.environ['_BARD_API_KEY'] = api_key
+    
+    # Set the prompt for bard
     def set_prompt(self, prompt):
         try:
             # Get the response from the prompt.
             response = self.get_response(prompt)
             if response:
-                # self.add_log(f"set_prompt: Response: {response}")
                 data = json.dumps(response, indent=4)
 
                 if data:
-                    # self.add_log(f"set_prompt: Data: {data}")
-
                     # Getting the data from the response.
                     json_data = json.loads(data)
                     if json_data:
@@ -58,28 +75,24 @@ class BardCoder:
 
                         # Saving the response to file.
                         self.add_log("Init: Saving response to file.")
-                        self.save_file("response/response.json",
-                                       json.dumps(response, indent=4))
+                        self.save_file("response/response.json",json.dumps(response, indent=4))
                         self.save_file("response/content.md", self.content)
 
                         # Getting the content from the response.
                         self.conversation_id = json_data['conversation_id']
                         if self.conversation_id:
-                            self.add_log(
-                                f"Init: Conversation ID: {self.conversation_id}")
+                            self.add_log(f"Init: Conversation ID: {self.conversation_id}")
 
                         # Getting the conversation ID from the response.
                         self.response_id = json_data['response_id']
                         if self.response_id:
-                            self.add_log(
-                                f"Init: Response ID: {self.response_id}")
+                            self.add_log(f"Init: Response ID: {self.response_id}")
 
                         # Get the factuality queries from the response.
                         self.factuality_queries = json_data['factualityQueries']
                         if self.factuality_queries:
                             for factualityQuery in self.factuality_queries:
-                                self.add_log(
-                                    f"Init: Factuality Query: {factualityQuery}")
+                                self.add_log(f"Init: Factuality Query: {factualityQuery}")
                             # Get the links from the response.
                             links = self.get_links()
                             self.add_log(f"set_prompt: Links: {links}")
@@ -87,17 +100,14 @@ class BardCoder:
                         # Get the text query from the response.
                         self.text_query = json_data['textQuery']
                         if self.text_query:
-                            self.add_log(
-                                f"Init: Text Query: {self.text_query}")
+                            self.add_log(f"Init: Text Query: {self.text_query}")
 
                         # Getting the code choices from the response.
                         self.code_choices = json_data['choices']
-                        self.add_log(
-                            f"Init: Code Choices: {self.code_choices}")
+                        self.add_log(f"Init: Code Choices: {self.code_choices}")
                         if self.code_choices:
                             for code_choice in self.code_choices:
-                                self.add_log(
-                                    f"Init: Code Choice: {code_choice}")
+                                self.add_log(f"Init: Code Choice: {code_choice}")
 
                         # Mark end of init. - Success
                         self.add_log("Init: Success.")
@@ -107,11 +117,12 @@ class BardCoder:
                     self.add_log("Init: Data is empty.")
 
         except Exception as e:
-            # self.add_log stack trace
+            # show stack trace
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
             self.add_log(str(e))
 
+    # get the response from bard
     def get_response(self, prompt: str):
         if not prompt:
             self.add_log("get_response: Prompt is empty.")
@@ -122,6 +133,7 @@ class BardCoder:
         # get response from bard
         return response
 
+    # get multiple responses from bard
     def get_code_choice(self, index):
         if index < len(self.code_choices):
             choice_content = self.code_choices[index]['content'][0]
@@ -138,6 +150,7 @@ class BardCoder:
         else:
             return None
 
+    # setting the logger
     def setup_logger(self, filename: str, level=logging.INFO):
         # Remove existing handlers from the root logger
         for handler in logging.root.handlers[:]:
@@ -153,6 +166,7 @@ class BardCoder:
 
         return logging.getLogger(__name__)
 
+    # get the code from bard response
     def get_code(self):
         try:
             if self.content:
@@ -177,18 +191,7 @@ class BardCoder:
             self.add_log(str(e))
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
-
-    def get_codey(self):
-        if self.content:
-            self.add_log("get_code: Getting code from content.")
-            data = self.content
-            start_index = data.find("```") + 3
-            end_index = data.find("```", start_index)
-            extracted_data = data[start_index:end_index]
-            result = extracted_data.strip()
-            self.add_log(f"get_code: Code: {result}")
-            return result
-
+            
     def save_code(self, filename="code.txt"):
         code = self.get_code()
         self.code_extenstion = '.' + self.get_code_extension()
@@ -225,6 +228,7 @@ class BardCoder:
                     self.add_log(f"save_code {filename} saved.")
                 return filename
 
+    # save multiple codes from bard response
     def save_code_choices(self, filename):
         self.add_log(
             f"save_code_choices: Saving code choices with filename: {filename}")
@@ -239,25 +243,18 @@ class BardCoder:
                     f"save_code_choices: Enumurated Choice content: {choice}")
                 self.save_file("codes/"+filename+'_'+str(index+1) +
                                self.code_extension, choice_content)
-
+                
+    # execute code from bard response using locally installed compilers.
+    # a support for online compilers will be added soon.
     def execute_code(self, filename):
         if filename:
             self.add_log(f"execute_code: Running {filename}")
             output = self.run_code_exec(filename)
             self.add_log(f"execute_code: Output: {output}")
             return output
-            result = subprocess.run([self.code_runner_script, filename, "--debug"])
-            # check output only if it was successful
-            if result.returncode == 0: # 0 - success, 1 - failure
-                output = subprocess.check_output([self.code_runner_script,filename, "--debug"])
-                self.add_log(f"execute_code: Output: {output}")
-                # Convert output from bytes to string
-                output = output.decode('utf-8')
-                return output
         return None
     
-
-
+    # execute code from bard response using locally installed compilers.
     def run_code_exec(self, filename: str, debug: bool = False, cpp_version: str = "c++17"):
         compiler_map = {
             ".c": ("gcc", "c"),
@@ -343,20 +340,7 @@ class BardCoder:
         self.add_log(f"run_code_exec: Output: {output}")
         return output
 
-
-
-            
-    """
-        def execute_code_stdout_file_only(self, filename):
-        if filename:
-            self.add_log(f"execute_code: Running {filename}")
-            result = subprocess.run([self.code_runner_script, filename, "--debug"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            output = result.stdout.decode('utf-8')
-            error = result.stderr.decode('utf-8')
-            self.add_log(f"execute_code: Output: {output}")
-            self.add_log(f"execute_code: Error: {error}")
-    """
-
+    # execute all the code choices from bard response using locally installed compilers.
     def execute_code_choices(self):
         self.add_log("execute_code_choices: Running codes")
         codes_choices_output = list()
@@ -369,6 +353,7 @@ class BardCoder:
             time.sleep(5)
         return codes_choices_output
 
+    # get the code extension from bard response - automatically detects the language from bard response.
     def get_code_extension(self):
         try:
             code_content = self.content
@@ -381,6 +366,7 @@ class BardCoder:
             self.add_log(stack_trace)
         return None
 
+    # get the links from bard response
     def get_links(self):
         data = self.factuality_queries
         links = []
