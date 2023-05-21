@@ -1,5 +1,5 @@
 """
-Details : BardCoder is code genrator for bard. It is used to generate code from bard response.
+Details : BardCoder Library is code genrator for bard. It is used to generate code from bard response.
 its using Bard API to interact with bard and refine the results for coding purpose.
 The main purpose of this is to integrate bard with any projects and make code generation easy.
 Language : Python
@@ -18,15 +18,14 @@ import traceback
 import subprocess
 import time
 from os import path
-import extensions_map
-from extensions_map import get_file_extesion
+import lib.extensions_map as extensions_map
+from lib.extensions_map import get_file_extesion
 
 class BardCoder:
     global bard
     global logger
     logs_enabled = False
     response_id, conversation_id, content, factuality_queries, text_query, code_choices, code_extension = None, None, None, None, None, None, None
-    code_runner_script = "./bash_src/CodeRunner.sh"
     
     def __init__(self, timeout=10, enable_logs=False):
             # call another constructor
@@ -46,7 +45,7 @@ class BardCoder:
                 self.enable_logs()
                 
             # Setups the logging.
-            self.logger = self.setup_logger("bard_coder.log")
+            self.logger = self.setup_logger("bardcoder.log")
             self.add_log("Init Starting ...")
             
         except Exception as e:
@@ -398,7 +397,7 @@ class BardCoder:
         if self.logs_enabled:
             self.logger.log(level, log)
         else:
-            self.logger = self.setup_logger('bard_coder.log')
+            self.logger = self.setup_logger('bardcoder.log')
             self.logger.log(level, log)
 
     def enable_logs(self):

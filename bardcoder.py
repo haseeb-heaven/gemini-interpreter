@@ -1,6 +1,7 @@
 from os import path
-from bard_coder import BardCoder, traceback
+from lib.bardcoder_lib import BardCoder, traceback
 import time
+import subprocess
 
 # Initialize the bard coder
 bard_coder = BardCoder(enable_logs=True)
@@ -135,11 +136,7 @@ if __name__ == "__main__":
     try:
         print("Welcome to Bard Coder - Experimental AI Code Generator")
 
-        #prompt = input("Prompt: ")
-        prompt = """
-        Write a program to print sum of prime numbers between 1 to 100 in C++ using vectors and list and maps.
-        Show me different ways to print the output.
-        """
+        prompt = input("Prompt: ")
         
         # Setting filenames for single/multiple code choices and output.
         code_file = "code_generated" # Filename of code. [Remeber no extension]
@@ -148,6 +145,8 @@ if __name__ == "__main__":
         exec_type = 'single'  # Execution type = single/multiple. [in Multiple execution type, bard coder will generate multiple code choices]
         rate_limiter_delay = 5 # Delay in seconds to avoid rate limiting.
         
+        # Clear the previous cache.
+        subprocess.call(['bash', 'bash_src/clear_cache.sh'])
         auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type,rate_limiter_delay)
 
     except Exception as e:

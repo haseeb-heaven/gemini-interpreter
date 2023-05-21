@@ -2,9 +2,10 @@
 Details : AutoBard-Coder is code genrator for bard. It is used to generate code from bard response.
 its using Bard API to interact with bard and refine the results for coding purpose.
 The main purpose of this is for research and educational purpose.
-This is using unofficial bard api and not affiliated with bard in any way.
+This is using unofficial bard api and not affiliated with bard in any way - So use it at your own risk.
 This can generate the code from prompt and fix itself unless the code is fixed.
 Language : Python
+Dependencies : streamlit, bard-coder
 Author : HeavenHM.
 License : MIT
 Date : 21-05-2023
@@ -15,9 +16,10 @@ import streamlit as st
 from os import path
 import time
 import traceback
-from bard_coder import BardCoder
-from extensions_map import get_streamlit_code_lang
+from lib.bardcoder_lib import BardCoder
+from lib.extensions_map import get_streamlit_code_lang
 import subprocess
+from io import StringIO
 
 # Initialize the bard coder
 bard_coder = BardCoder(enable_logs=True)
@@ -183,7 +185,7 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
 
 if __name__ == "__main__":
     # Set the page title and description
-    st.title("AutoBard - Code Generator")
+    st.title("AutoBard - Code Interpreter")
     prompt = st.text_area("Enter your prompt here:")
     bard_api_key = ""
     
@@ -200,7 +202,28 @@ if __name__ == "__main__":
         bard_api_key = st.text_input("Bard API key:", type="password")
         if bard_api_key:
             bard_coder.set_api_key(bard_api_key)
-    
+
+    uploaded_file = st.file_uploader("Choose a file")
+    if uploaded_file is not None:
+        
+        # To read file as bytes:
+        bytes_data = uploaded_file.getvalue()
+        # To convert to a string based IO:
+        stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+        # To read file as string:
+        upload_data = stringio.read()
+
+        # Display a success message
+        st.success("File uploaded successfully.")
+        
+        # Run the auto bard setup process.
+        log_container = st.empty()
+        prompt = "I want you to anaylze the file and show its basic data visualization.\n" + \
+        "Here is the file data.\n" + \
+        f"```\n{upload_data}\n```"
+        auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
+
+            
     # Seting application to run
     if st.button("Run"):
         # Clear the previous cache.
