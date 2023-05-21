@@ -184,53 +184,63 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
 
 
 if __name__ == "__main__":
-    # Set the page title and description
-    st.title("AutoBard - Code Interpreter")
-    prompt = st.text_area("Enter your prompt here:")
-    bard_api_key = ""
-    
-    # Setting options for the application
-    with st.expander("Options"):
-        code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
-        code_choices = st.text_input("Filename for code choices:", value="code_choices")
-        expected_output = st.text_input("Expected output (leave blank if none):")
-        exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
-        rate_limiter_delay = st.number_input("Rate limiter delay (in seconds):", value=5)
-
-    # Setting the settings for the application    
-    with st.expander("Settings"):
-        bard_api_key = st.text_input("Bard API key:", type="password")
-        if bard_api_key:
-            bard_coder.set_api_key(bard_api_key)
-
-    uploaded_file = st.file_uploader("Choose a file")
-    if uploaded_file is not None:
+    try:
+        # Upload file data variables
+        upload_prompt_data,upload_data,uploaded_file = None,None,None
         
-        # To read file as bytes:
-        bytes_data = uploaded_file.getvalue()
-        # To convert to a string based IO:
-        stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-        # To read file as string:
-        upload_data = stringio.read()
-
-        # Display a success message
-        st.success("File uploaded successfully.")
+        # Set the page title and description
+        st.title("AutoBard - Code Interpreter")
+        prompt = st.text_area("Enter your prompt here:")
+        bard_api_key = ""
         
-        # Run the auto bard setup process.
-        log_container = st.empty()
-        prompt = "I want you to anaylze the file and show its basic data visualization.\n" + \
-        "Here is the file data.\n" + \
-        f"```\n{upload_data}\n```"
-        auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
+        # Setting options for the application
+        with st.expander("Options"):
+            code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
+            code_choices = st.text_input("Filename for code choices:", value="code_choices")
+            expected_output = st.text_input("Expected output (leave blank if none):")
+            exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
+            rate_limiter_delay = st.number_input("Rate limiter delay (in seconds):", value=5)
 
+            # Adding the upload file option
+            uploaded_file = st.file_uploader("Choose a file")
+            if uploaded_file is not None:
+                
+                # To read file as bytes:
+                bytes_data = uploaded_file.getvalue()
+                # To convert to a string based IO:
+                stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+                # To read file as string:
+                upload_data = stringio.read()
+                
+                # write the file to uploads directory
+                with open("uploads/" + uploaded_file.name, "w") as f:
+                    f.write(upload_data)
+                
+                # Display a success message
+                st.success("File uploaded successfully.")
             
-    # Seting application to run
-    if st.button("Run"):
-        # Clear the previous cache.
-        st.code("Running the code generator", language="python")
-        subprocess.call(['bash', 'bash_src/clear_cache.sh'])
-        
-        # Run the auto bard setup process.
-        log_container = st.empty()
-        auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
+        # Setting the settings for the application    
+        with st.expander("Settings"):
+            bard_api_key = st.text_input("Bard API key:", type="password")
+            if bard_api_key:
+                bard_coder.set_api_key(bard_api_key)
+
+        # Seting application to run
+        if st.button("Run"):
+            # Clear the previous cache.
+            st.code("Running the code generator", language="python")
+            subprocess.call(['bash', 'bash_src/clear_cache.sh'])
+            
+            # Append the uploaded file data to prompt
+            if upload_data:
+                prompt += "\n" + f"Here is the file called {uploaded_file.name} at location {'uploads/' + uploaded_file.name} data.\n" + \
+                f"```\n{upload_data}\n```"
+                
+            # Run the auto bard setup process.
+            log_container = st.empty()
+            auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
+    except Exception as e:
+        # show_outputf the stack trace
+        stack_trace = traceback.format_exc()
+        st.code(stack_trace, language="python")
 

@@ -30,14 +30,14 @@ Do not expose the `__Secure-1PSID value`.
 Note that while it is referred to as an `API KEY` for convenience, it is not an officially provided API KEY.
 
 To install the dependencies, you can use pip to install from the **requirements.txt** file:
-This will install streamlit, bard-coder, and any other dependencies listed in the requirements.txt file.
+This will install streamlit, bard-coder-api, and any other dependencies listed in the `requirements.txt` file.
 
 ## Usage
 There are 3 components of this application:
 1. BardCoder: A coding assistant from Bard which automatically generates code from bard responses and refines it for coding purposes. This can be used by developers to get the correct code from Bard when they need help because the output is refined and fixed multiple times to provide the correct code.
 - File: `bardcoder.py`
 
-![cover_logo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/logo.png?raw=true "")</br>
+![bardcoder_main](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/bardcoder_main.png?raw=true "")</br>
 
 2. AutoBard-Coder Interpreter: This is an interpreter for bardcoder which can be used to run the code generated from bardcoder. This can be very useful for all users who want to do data analysis and machine learning with bard. This can generate graphs and charts from bard responses and can be used to do data analysis.
 - File: `bardcode_interpreter.py`
@@ -65,13 +65,23 @@ You can also setup the `API KEY` in the UI settings.
 
 Before prompting you should check the **Options** to change **Filenames** and **Filepaths** and other settings.
 
+### Uploading data for data analysis:
+You can set the `Upload Data` in **Options** to upload data for data analysis.
+![upload_data_ui](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/upload_data_ui.png?raw=true "")</br>
+
+After uploading the files you can ask for the prompts from bard. And you will get the output like this.
+![upload_data_output](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/upload_data_output.png?raw=true "")</br>
+
 You can also set the `Expected Output` in **Options** to get the **Accuracy** of the code generated.
 ![expected_output](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_expected_output.png?raw=true "")</br>
 
 And output will be generated like this with hilighting the **Accuracy** of the code generated.
 ![expected_output](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_output.png?raw=true "")</br>
 
-The code generated will be placed in folder `codes` and the response will be placed in folder `response`.
+### Code Interpreter Demo:
+[Code Interpreter Demo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/code_interpreter_demo.webm)
+
+The code generated will be placed in folder `codes` and the response will be placed in folder `response` and upload files will be placed in folder `uploads`.
 
 ### Graphs and Visual Charts output:
 To get Graphs and Charts output for your data visualization, you will install python packages `matplotlib`, `seaborn`, `cartopy`, `plotnine` and more. and run the following command: </br>
@@ -106,9 +116,7 @@ Some of the features of AutoBard-Coder include:
 - Ability to access local files for code interpretation
 - Data analysis and machine learning capabilities
 - Graphs and charts generation from bard responses
-
-## Help
-If you need help with using AutoBard-Coder, you can refer to this README or visit https://pypi.org/project/bardapi/ for more information on using the Bard API.
+- Ability to upload files for data analysis and machine learning.
 
 ## License and Author
 AutoBard-Coder was created by HeavenHM and is licensed under the MIT license.
