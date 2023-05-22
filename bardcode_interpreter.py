@@ -51,7 +51,7 @@ def show_output(message):
 def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
     try:
         # Additional prompt for class clarification.
-        prompt += "\n" + f"Note: The Name the class should be {code_file} if Java and C# languages is selected"
+        prompt += "\n" + f"Note: The Name the class should be {code_file} if Java language is requested"
         
         # Additional prompt for no input clarification.
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."

@@ -15,10 +15,11 @@ AutoBard-Coder is a code generator for bard.🙌👩‍💻👨‍💻 It uses t
 To set up AutoBard-Coder, you will need to install the dependencies: `streamlit` and `bardapi`. </br>
 You will also need to authenticate with the Bard API by visiting https://bard.google.com/, </br>
 1.Opening the console with F12 </br>
-2.Going to Application → Cookies, and copying the value of the __Secure-1PSID cookie.</br>
-3.Then you can setup the key to your **local environment** by running the following command:
+2.Going to **Application** → **Cookies**, and copying the value of the **__Secure-1PSID** cookie.</br>
+3.Then you can setup the key to your **local environment** by running the following command:</br>
 ```export _BARD_API_KEY=<__Secure-1PSID value>``` Remember the `_` before `BARD_API_KEY` is important. </br>
 Or you can use `bardcoder_lib.py` to set the key to your **local environment** by running the following method `bard_coder.set_api_key(<__Secure-1PSID value>)` </br>
+![showcase_api_key](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/showcase_api_key.png?raw=true "")</br>
 
 4.Then you can run the application by running the following command:
 ```python bardcoder.py``` </br>
@@ -79,7 +80,8 @@ And output will be generated like this with hilighting the **Accuracy** of the c
 ![expected_output](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_output.png?raw=true "")</br>
 
 ### Code Interpreter Demo:
-[Code Interpreter Demo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/code_interpreter_demo.webm)
+[Code Interpreter Demo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_demo.webm)</br>
+[![code_interpreter_demo](https://img.youtube.com/vi/Flg1qUzs9ew/0.jpg)](https://youtube.com/shorts/Flg1qUzs9ew)
 
 The code generated will be placed in folder `codes` and the response will be placed in folder `response` and upload files will be placed in folder `uploads`.
 
