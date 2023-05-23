@@ -20,6 +20,9 @@ from lib.bardcoder_lib import BardCoder
 from lib.extensions_map import get_streamlit_code_lang
 import subprocess
 from io import StringIO
+import requests
+import json
+from lib.sharegpt_api import sharegpt_get_url
 
 # Initialize the bard coder
 bard_coder = BardCoder(enable_logs=True)
@@ -45,7 +48,8 @@ messages = ""
 def show_output(message):
     global messages
     messages += message + "\n"
-    log_container.code(messages, language="python")
+    st.session_state.messages = messages
+    log_container.code(st.session_state.messages, language="python")
 
 # method to execute the bard coder process
 def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
@@ -181,12 +185,19 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
     measure_accuracy(test_cases_output)            
     content_file = "response/content.md"
     show_content(content_file)
-
+    return code_output
 
 if __name__ == "__main__":
     try:
         # Upload file data variables
         upload_prompt_data,upload_data,uploaded_file = None,None,None
+        
+        # Initialize the session state variables
+        if "code_output" not in st.session_state:
+            st.session_state.code_output = ""
+        
+        if "messages" not in st.session_state:    
+            st.session_state.messages = ""
         
         # Set the page title and description
         st.title("AutoBard - Code Interpreter")
@@ -224,7 +235,7 @@ if __name__ == "__main__":
             bard_api_key = st.text_input("Bard API key:", type="password")
             if bard_api_key:
                 bard_coder.set_api_key(bard_api_key)
-
+        
         # Seting application to run
         if st.button("Run"):
             # Clear the previous cache.
@@ -238,7 +249,27 @@ if __name__ == "__main__":
                 
             # Run the auto bard setup process.
             log_container = st.empty()
-            auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
+            st.session_state.code_output = auto_bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
+            
+        # Adding Share button
+        if st.button("Share"):
+            if st.session_state.code_output is None and st.session_state.messages is None:
+                st.code("Please run the code generator first", language="python")
+            else:
+                gpt_data = prompt
+                human_data = ""
+                
+                if st.session_state.messages:
+                    human_data = "Bard Logs: \n" + st.session_state.messages
+                if st.session_state.code_output:
+                    human_data += "\nOutput:\n" + st.session_state.code_output
+                human_data += "\n\n[AutoBard-Coder: Repo](https://github.com/haseeb-heaven/AutoBard-Coder)"
+                
+                sharegpt_url = sharegpt_get_url(gpt_data, human_data)
+                #st.code(sharegpt_url, language="python")
+                st.code(f"ShareGPT Url: {sharegpt_url}", language="python")
+
+            
     except Exception as e:
         # show_outputf the stack trace
         stack_trace = traceback.format_exc()

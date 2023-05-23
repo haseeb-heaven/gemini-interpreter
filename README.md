@@ -79,6 +79,10 @@ You can also set the `Expected Output` in **Options** to get the **Accuracy** of
 And output will be generated like this with hilighting the **Accuracy** of the code generated.
 ![expected_output](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_output.png?raw=true "")</br>
 
+### Sharing code with others:
+You can share code with others by using the **ShareGPT** feature. You will get sharable link for your code.
+![bard_code_share](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/bard_code_share.png?raw=true "")</br>
+
 ### Code Interpreter Demo:
 [Code Interpreter Demo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_demo.webm)</br>
 [![code_interpreter_demo](https://img.youtube.com/vi/Flg1qUzs9ew/0.jpg)](https://youtube.com/shorts/Flg1qUzs9ew)
@@ -119,6 +123,8 @@ Some of the features of AutoBard-Coder include:
 - Data analysis and machine learning capabilities
 - Graphs and charts generation from bard responses
 - Ability to upload files for data analysis and machine learning.
+- Share code with others with powerered by ShareGPT.
+
 
 ## License and Author
 AutoBard-Coder was created by HeavenHM and is licensed under the MIT license.
