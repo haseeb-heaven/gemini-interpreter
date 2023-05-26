@@ -1,5 +1,10 @@
 #!/bin/bash
 
+# Create codes folder if it doesn't exist
+if [ ! -d "codes" ]; then
+  mkdir codes
+fi
+
 # removing all files from codes folder
 rm -rf codes/*
 

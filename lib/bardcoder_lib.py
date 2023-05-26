@@ -229,8 +229,7 @@ class BardCoder:
 
     # save multiple codes from bard response
     def save_code_choices(self, filename):
-        self.add_log(
-            f"save_code_choices: Saving code choices with filename: {filename}")
+        self.add_log(f"save_code_choices: Saving code choices with filename: {filename}")
         extension = self.get_code_extension()
         if extension:
             self.code_extension = '.' + extension
@@ -238,8 +237,7 @@ class BardCoder:
 
             for index, choice in enumerate(self.code_choices):
                 choice_content = self.get_code_choice(index)
-                self.add_log(
-                    f"save_code_choices: Enumurated Choice content: {choice}")
+                self.add_log(f"save_code_choices: Enumurated Choice content: {choice}")
                 self.save_file("codes/"+filename+'_'+str(index+1) +
                                self.code_extension, choice_content)
                 

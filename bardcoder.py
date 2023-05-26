@@ -143,7 +143,9 @@ def bard_setup_process(prompt, code_file='code.txt', code_choices='code_choice',
 if __name__ == "__main__":
     try:
         show_output("Welcome to Bard Coder - Experimental AI Code Generator")
-
+                
+        # Clear the previous cache.
+        subprocess.call(['bash', 'bash_src/clear_cache.sh'])
         prompt = input("Prompt: ")
         
         # Setting filenames for single/multiple code choices and output.
@@ -153,9 +155,6 @@ if __name__ == "__main__":
         exec_type = 'single'  # Execution type = single/multiple. [in Multiple execution type, bard coder will generate multiple code choices]
         rate_limiter_delay = 5 # Delay in seconds to avoid rate limiting.
         share_gpt = True # Share the code on sharegpt.com
-        
-        # Clear the previous cache.
-        subprocess.call(['bash', 'bash_src/clear_cache.sh'])
         
         # Execute the bard coder process.
         code_output = bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type,rate_limiter_delay)
