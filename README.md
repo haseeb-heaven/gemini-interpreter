@@ -1,6 +1,6 @@
 # AutoBard-Coder
 ![cover_logo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/logo.png?raw=true "")</br>
-
+- **Support this Project** <a href="https://www.buymeacoffee.com/haseebheaven"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=haseebheaven&button_colour=40DCA5&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" /></a>
 ## General Information
 AutoBard-Coder is a code generator for bard.🙌👩‍💻👨‍💻 It uses the Bard API to interact with bard and refine the results for coding purposes. The main purpose of this is for research and educational purposes. This can generate code from prompts and fix itself unless the code is fixed. It is written in Python and has dependencies on streamlit and bard-coder.
 
