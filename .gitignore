@@ -5,3 +5,6 @@
 *.doc
 *.md
 .DS_Store
+graph.png
+*.txt
+*.json
