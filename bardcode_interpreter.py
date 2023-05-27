@@ -33,7 +33,8 @@ def measure_accuracy(counter):
     accuracy = 1 / (counter + 1)
     accuracy_percentage = accuracy * 100
     st.code(
-        f"Output has been fixed {counter} times with accuracy {accuracy_percentage:.0f}%", language="python")
+        f"Output has been fixed {counter} times with accuracy {accuracy_percentage:.0f}%",
+        language="python")
 
 
 def show_content(content):
@@ -56,10 +57,9 @@ def show_output(message):
     st.session_state.messages = messages
     log_container.code(st.session_state.messages, language="python")
 
+
 # method to execute the bard coder process
-
-
-def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single', rate_limiter_delay=5):
+def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',expected_output=None,exec_type='single',rate_limiter_delay=5):
     try:
         # Additional prompt for class clarification.
         # prompt += "\n" + f"Note: The Name the class should be {code_file} if Java language is requested"
@@ -80,39 +80,51 @@ def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_c
             show_output("Code not saved to file")
 
         show_output("Executing primary code")
-        code_output = bard_coder.execute_code(saved_file)
-        if code_output and code_output != None and code_output.__len__() > 0:
-            if 'error' in code_output.lower() or 'exception' in code_output.lower():
-                show_output(
-                    f"Error in executing code with exec_type {exec_type}")
+        
+        # check for safe code to run.
+        code = bard_coder.read_file(saved_file)
+        safe_code = False
+        
+        if code:
+            safe_code = is_code_safe(code)
+        
+        if safe_code:
+            code_output = bard_coder.execute_code(saved_file)
+            if code_output and code_output != None and code_output.__len__() > 0:
+                if 'error' in code_output.lower() or 'exception' in code_output.lower():
+                    show_output(
+                        f"Error in executing code with exec_type {exec_type}")
+                    return code_output, saved_file, False
+
+                # Check if expected output is in code output.
+                if expected_output and expected_output in code_output:
+                    code_choices_output = [code_output]
+                    return code_output, saved_file, True
+                else:
+                    if exec_type == 'single':
+                        time.sleep(rate_limiter_delay)
+                        return code_output, saved_file, False
+                    else:
+                        time.sleep(rate_limiter_delay)
+            else:
                 return code_output, saved_file, False
 
-            # Check if expected output is in code output.
-            if expected_output and expected_output in code_output:
-                code_choices_output = [code_output]
-                return code_output, saved_file, True
-            else:
-                if exec_type == 'single':
-                    time.sleep(rate_limiter_delay)
-                    return code_output, saved_file, False
-                else:
-                    time.sleep(rate_limiter_delay)
+            # Save all the code choices to file
+            if exec_type == 'multiple':
+                bard_coder.save_code_choices(code_choices)
+
+                show_output("Executing code choices")
+                code_choices_output = bard_coder.execute_code_choices()
+                code_choices_output.append(code_output)
+                show_output(f"Output: {code_choices_output}")
+
+            # Execute all the code and code choices.
+            # bard_coder.execute_code_choices()
+
+            return code_choices_output, saved_file, False
         else:
-            return code_output, saved_file, False
-
-        # Save all the code choices to file
-        if exec_type == 'multiple':
-            bard_coder.save_code_choices(code_choices)
-
-            show_output("Executing code choices")
-            code_choices_output = bard_coder.execute_code_choices()
-            code_choices_output.append(code_output)
-            show_output(f"Output: {code_choices_output}")
-
-        # Execute all the code and code choices.
-        # bard_coder.execute_code_choices()
-
-        return code_choices_output, saved_file, False
+            st.error("Cannot run the code because of illegal commands")
+            return None, None, False
 
     except Exception as e:
         # show_outputf the stack trace
@@ -120,26 +132,22 @@ def auto_bard_execute_process(prompt, code_file='code.txt', code_choices='code_c
         show_output(stack_trace)
         show_output(str(e))
 
+
 # method to execute the bard coder process
-
-
-def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single', rate_limiter_delay=5):
+def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expected_output=None,xec_type='single',ate_limiter_delay=5):
 
     # Append the codes directory to filename
     code_file = path.join("codes", code_file)
     test_cases_output = 0  # Test cases for output.
 
     # Start the bard coder process
-    code_choices_output, saved_file, status = auto_bard_execute_process(
-        prompt, code_file, code_choices, expected_output, exec_type)
+    code_choices_output, saved_file, status = auto_bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
     code_output = None
 
     if status:
-        show_output(
-            f"Expected output found in file {saved_file}\nOutput: {code_choices_output}")
+        show_output(f"Expected output found in file {saved_file}\nOutput: {code_choices_output}")
     else:
-        show_output(
-            f"Expected output not found in file {saved_file}\nOutput: {code_choices_output}")
+        show_output(f"Expected output not found in file {saved_file}\nOutput: {code_choices_output}")
         if code_choices_output:
             code_output = ''.join(code_choices_output)
         if code_output and code_output != None and code_output.__len__() > 0:
@@ -153,7 +161,7 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
             if code_output:
                 while 'error' in code_output.lower() or 'exception' in code_output.lower():
                     show_output(
-                        f"Error in executing code,Trying to fix the code with error")
+                        "Error in executing code,Trying to fix the code with error")
 
                     # Re-prompt on error.
                     code = bard_coder.get_code()
@@ -161,13 +169,13 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
                         "Note:The output should only be fixed code and nothing else. No explanation or anything else."
 
                     # Start the bard coder process again.
-                    code_output, saved_file, status = auto_bard_execute_process(
+                    code_output, saved_file, status = auto_bard_execute(
                         prompt, code_file, code_choices, expected_output, exec_type)
                     # Sleep for 5 seconds before re-prompting. Dont get Rate limited.
                     time.sleep(rate_limiter_delay)
                     test_cases_output += 1
 
-            show_output(f"Code has been fixed for error")
+            show_output("Code has been fixed for error")
             st.code(code_output, language="python")
 
             # Check for expected output.
@@ -184,14 +192,14 @@ def auto_bard_setup_process(prompt, code_file='code.txt', code_choices='code_cho
                         "Note:The output should only be fixed code and nothing else. No explanation or anything else."
 
                     # start the bard coder process again.
-                    code_output, saved_file, status = auto_bard_execute_process(
+                    code_output, saved_file, status = auto_bard_execute(
                         prompt, code_file, code_choices, expected_output, exec_type)
 
                     # Sleep for N seconds before re-prompting. Dont get Rate limited.
                     time.sleep(rate_limiter_delay)
                     test_cases_output += 1
 
-                show_output(f"Code has been fixed for expected output")
+                show_output("Code has been fixed for expected output")
                 st.code(code_output, language="python")
             else:
                 show_output("Not checking for code expected output")
@@ -225,6 +233,30 @@ def find_image_files(file_path):
                 return image_file
     return None
 
+def is_prompt_safe(prompt):
+    harmful_commands = ['dig', 'kedit', 'ftp', 'iwconfig', 'pkill', 'whois', 'scp', 'chgrp', 'nc', 'traceroute', 'pgrep', 'mv', 
+                        'chdir','rename', 'kate', 'arp', 'route', 'host', 'curl', 'ncat.openbsd', 'nmap', 'ncat.traditional', 'htop', 'ls', 'netstat', 
+                        'ping', 'sudo', 'cd', 'mousepad', 'wireshark', 'wget', 'chown', 'ps', 'tcpdump', 'grep', 'netcat', 'nc.openbsd', 'mkdir', 
+                        'cp', 'mac', 'nslookup', 'sftp', 'top', 'format', 'ifconfig', 'nc.traditional', 'ip', 'nano', 'ssh', 'chmod', 'vim', 
+                        'kill', 'rm', 'ss', 'restart', 'telnet', 'kwrite', 'cat', 'ncat', 'rsync', 'delete', 'remove', 'shutdown', 'reboot','create folder','create directory','create file','remove file','remove folder','remove directory']
+    for command in harmful_commands:
+        if command in prompt.lower():
+            return False
+    return True
+
+def is_code_safe(code):
+    harmful_commands = [
+    'os.system', 'os.remove', 'os.rmdir', 'shutil.rmtree', 'subprocess.call', 'eval', 'exec', 'open',
+    'os._exit', 'os.abort', 'os.kill', 'os.fork', 'os.execl', 'os.execle', 'os.execlp', 'os.execlpe',
+    'os.execv', 'os.execve', 'os.execvp', 'os.execvpe', 'os.popen', 'os.popen2', 'os.popen3',
+    'os.popen4', 'os.startfile', 'os.spawnl', 'os.spawnle', 'os.spawnlp', 'os.spawnlpe',
+    'os.spawnv', 'os.spawnve', 'os.spawnvp', 'os.spawnvpe'
+]
+    for command in harmful_commands:
+        if command in code.lower():
+            return False
+    return True
+
 
 if __name__ == "__main__":
     try:
@@ -245,16 +277,11 @@ if __name__ == "__main__":
 
         # Setting options for the application
         with st.expander("Options"):
-            code_file = st.text_input(
-                "Filename for the generated code (without extension):", value="generated_code")
-            code_choices = st.text_input(
-                "Filename for code choices:", value="code_choices")
-            expected_output = st.text_input(
-                "Expected output (leave blank if none):")
-            exec_type = st.selectbox(
-                "Execution type:", ["single", "multiple"], index=0)
-            rate_limiter_delay = st.number_input(
-                "Rate limiter delay (in seconds):", value=5)
+            code_file = st.text_input("Filename for the generated code (without extension):",value="generated_code")
+            code_choices = st.text_input("Filename for code choices:",value="code_choices")
+            expected_output = st.text_input("Expected output (leave blank if none):")
+            exec_type = st.selectbox("Execution type:", ["single", "multiple"],index=0)
+            rate_limiter_delay = st.number_input("Rate limiter delay (in seconds):",value=5)
 
             # Adding the upload file option
             uploaded_file = st.file_uploader("Choose a file")
@@ -276,6 +303,13 @@ if __name__ == "__main__":
 
         # Setting the settings for the application
         with st.expander("Settings"):
+            bard_key_help_text = """
+      How to obtain bard API key.
+      1. Visit bard.google.com and open the console with F12
+      2. Go to Application → Cookies and copy the __Secure-1PSID value
+      3. This is your API key paste it below.
+      """
+            st.code(bard_key_help_text, language="python")
             bard_api_key = st.text_input("Bard API key:", type="password")
             if bard_api_key:
                 bard_coder.set_api_key(bard_api_key)
@@ -294,15 +328,24 @@ if __name__ == "__main__":
             # If graph were requested.
             if 'graph' in prompt.lower():
                 prompt += "\n" + "using Python use Matplotlib save the graph in file called 'graph.png'"
-            
+
+            # if Chart were requested
             if 'chart' in prompt.lower():
                 prompt += "\n" + "using Python use Plotly save the chart in file called 'chart.png'"
-
-            # Run the auto bard setup process.
-            log_container = st.empty()
-            st.session_state.code_output, saved_file, status = auto_bard_setup_process(
-                prompt, code_file, code_choices, expected_output, exec_type, rate_limiter_delay)
-
+                
+            # if Table were requested
+            if 'table' in prompt.lower():
+                prompt += "\n" + "using Python use Pandas save the table in file called 'table.md'"
+            
+            # Refine the prompt for harmful commands.
+            if is_prompt_safe(prompt):              
+                # Run the auto bard setup process.
+                log_container = st.empty()
+                st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, expected_output, exec_type,
+                    rate_limiter_delay)
+            else:
+                st.error("Cannot run the prompt because of illegal commands")
+          
             # Check if output is Graph,Chart request.
             if 'graph' in prompt.lower() or 'chart' in prompt.lower():
                 image_file_graph = find_image_files(saved_file)
