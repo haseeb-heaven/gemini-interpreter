@@ -88,20 +88,20 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         safe_code = False
         code_snippet = None
         code_command = None
+        safe_code_dict = []
         
         if code:
-            code_safe_dict = is_code_safe(code)
+            safe_code_dict = is_code_safe(code)
             # how to get tuple from list of tuples code_safe_dict
-            safe_code = code_safe_dict[0][0]
-            code_command = code_safe_dict[0][1]
-            code_snippet = code_safe_dict[0][2]
+            safe_code = safe_code_dict[0][0]
+            code_command = safe_code_dict[0][1]
+            code_snippet = safe_code_dict[0][2]
         
         if safe_code:
             code_output = bard_coder.execute_code(saved_file)
             if code_output and code_output != None and code_output.__len__() > 0:
                 if 'error' in code_output.lower() or 'exception' in code_output.lower():
-                    show_output(
-                        f"Error in executing code with exec_type {exec_type}")
+                    show_output(f"Error in executing code with exec_type {exec_type}")
                     return code_output, saved_file, False
 
                 # Check if expected output is in code output.
@@ -131,8 +131,15 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
 
             return code_choices_output, saved_file, False
         else:
-            st.error(f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
-            bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'",logging.ERROR)
+            for safe_codes in safe_code_dict:
+                if safe_codes[0]: # Skip if code is safe
+                    continue
+                
+                safe_code = safe_codes[0]
+                code_command = safe_codes[1]
+                code_snippet = safe_codes[2]
+                st.error(f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
+                bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'",logging.ERROR)
             st.stop()
             return None, None, False
 
@@ -274,7 +281,7 @@ def is_code_safe(code):
     'execv', 'execve', 'execvp', 'execvpe', 'popen', 'popen2', 'popen3',
     'popen4', 'startfile', 'spawnl', 'spawnle', 'spawnlp', 'spawnlpe',
     'spawnv', 'spawnve', 'spawnvp', 'spawnvpe',
-    'os.remove', 'os.rmdir', 'os.removedirs', 'os.unlink', 'os.rename', 'os.renames','os.system','os.getcwd','os.chdir','os.mkdir','os.makedirs',
+    'os.remove', 'os.rmdir', 'os.removedirs', 'os.unlink', 'os.rename', 'os.renames','os.system','os.chdir','os.mkdir','os.makedirs',
 ]
     
     harmful_commands_cpp = [
@@ -321,7 +328,7 @@ def is_code_safe(code):
                 output_dict.append((False,command,codes))
                 
     if output_dict is None or output_dict.__len__() == 0:
-        output_dict = [(False,None,None)]
+        output_dict = [(True,None,None)]
     bard_coder.add_log(f"Output dict is {output_dict}")
     return output_dict
 
@@ -413,8 +420,8 @@ if __name__ == "__main__":
                 st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, expected_output, exec_type,
                     rate_limiter_delay)
             else:
-                st.error(f"Cannot run the prompt because of illegal command found '{command}'")
-                bard_coder.add_log(f"Cannot run the prompt: '{prompt}' because of illegal command found '{command}'",logging.ERROR)
+                st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
+                bard_coder.add_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'",logging.ERROR)
                 st.stop()
           
             # Check if output is Graph,Chart request.
@@ -424,6 +431,11 @@ if __name__ == "__main__":
                     bard_coder.add_log(f"Graph image file is {image_file_graph} and code file is {saved_file}")
                     image = Image.open(image_file_graph)
                     st.image(image, caption='Graph Output')
+            
+            # Check if output in Table request.
+            if 'table' in prompt.lower():
+                table_file = "table.md"
+                st.markdown(f"Table Output: {table_file}")
 
         # Adding Share button
         if st.button("Share"):
