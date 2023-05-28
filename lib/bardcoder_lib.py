@@ -110,22 +110,22 @@ class BardCoder:
 
                         # Mark end of init. - Success
                         self.add_log("Init: Success.")
-                        return True
+                        return True,"Success."
                     else:
                         self.add_log("Init: Json data is empty.")
-                        return False
+                        return False,"Json data is empty."
                 else:
                     self.add_log("Init: Data is empty.")
-                    return False
+                    return False,"Data is empty."
             else:
-                self.add_log("Init: Response is empty.\nCheck the API key is valid.")
-                return False
+                self.add_log("Init: Response is empty.\nCheck if the API key is valid.")
+                return False,"Response is empty.\nCheck if the API key is valid."
 
         except Exception as e:
             # show stack trace
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
-            self.add_log(str(e))
+            return False,str(e)
 
     # get the response from bard
     def get_response(self, prompt: str):

@@ -27,9 +27,9 @@ def bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
         
         # Setting the prompt.
-        prompt_status = bard_coder.set_prompt(prompt)
+        prompt_status,error_reason = bard_coder.set_prompt(prompt)
         if not prompt_status:
-            print("BardCoder: " + "Error while setting prompt.\nCheck the API key is valid and prompt is not empty")
+            print(f"Error no data was recieved from Server, Reason {error_reason}")
             return None, None, False
 
         # Get the code from the response.

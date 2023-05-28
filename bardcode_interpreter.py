@@ -70,9 +70,9 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
 
         # Setting the prompt.
-        prompt_status = bard_coder.set_prompt(prompt)
+        prompt_status,error_reason = bard_coder.set_prompt(prompt)
         if not prompt_status:
-            st.error("Error while setting prompt.\nCheck the API key is valid and prompt is not empty")
+            st.error(f"Error no data was recieved from Server, Reason {error_reason}")
             st.stop()
         
         # Get the code from the response.
@@ -104,7 +104,7 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
             code_output = bard_coder.execute_code(saved_file)
             if code_output and code_output != None and code_output.__len__() > 0:
                 if 'error' in code_output.lower() or 'exception' in code_output.lower():
-                    show_output(f"Error in executing code with exec_type {exec_type}")
+                    show_output(f"Error in executing code with type {exec_type}")
                     return code_output, saved_file, False
 
                 # Check if expected output is in code output.
@@ -382,7 +382,7 @@ if __name__ == "__main__":
         # Setting the settings for the application
         with st.expander("Settings"):
             bard_key_help_text = """
-      How to obtain bard API key.
+      How to obtain Google Bard API key.
       1. Visit bard.google.com and open the console with F12
       2. Go to Application → Cookies and copy the __Secure-1PSID value
       3. This is your API key paste it below.
@@ -401,7 +401,7 @@ if __name__ == "__main__":
               st.stop()
               
             # Clear the previous cache.
-            st.code("Running the code generator", language="python")
+            st.code("Running the code interpreter", language="python")
             subprocess.call(['bash', 'bash_src/clear_cache.sh'])
 
             # Append the uploaded file data to prompt
@@ -414,7 +414,7 @@ if __name__ == "__main__":
                 prompt += "\n" + "using Python use Matplotlib save the graph in file called 'graph.png'"
 
             # if Chart were requested
-            if 'chart' in prompt.lower():
+            if 'chart' in prompt.lower() or 'plot' in prompt.lower():
                 prompt += "\n" + "using Python use Plotly save the chart in file called 'chart.png'"
                 
             # if Table were requested
@@ -444,7 +444,9 @@ if __name__ == "__main__":
             # Check if output in Table request.
             if 'table' in prompt.lower():
                 table_file = "table.md"
-                st.markdown(f"Table Output: {table_file}")
+                table_file_data = bard_coder.read_file(table_file)
+                if table_file_data:
+                    st.markdown(table_file_data)
 
         # Adding Share button
         if st.button("Share"):
