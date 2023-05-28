@@ -93,6 +93,14 @@ You can share code with others by using the **ShareGPT** feature. You will get s
 
 The code generated will be placed in folder `codes` and the response will be placed in folder `response` and upload files will be placed in folder `uploads`.
 
+### Safety and Measures:
+This now has **safety measures** built in _Code Interpreter_ and now it can detect the **safety** of the code generated and can **fix** it.</br>
+So now all the repo and code in **READ_ONLY** mode. And you can only run the code in **READ_ONLY** mode.</br>
+All the commands which **__changes,move,delete,rename__** files are disabled in **READ_ONLY** mode.</br>
+This has advanced **safety measures** and can detect the **safety** of the code generated and can **fix** it.</br>
+![safety_output](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/safety_output.png?raw=true "")</br>
+
+
 ### Graphs and Visual Charts output:
 To get Graphs and Charts output for your data visualization, you will install python packages `matplotlib`, `seaborn`, `cartopy`, `plotnine` and more. and run the following command: </br>
 ```python bardcode_interpreter.py``` </br>
@@ -128,6 +136,7 @@ Some of the features of AutoBard-Coder include:
 - Graphs and charts generation from bard responses
 - Ability to upload files for data analysis and machine learning.
 - Share code with others with powerered by ShareGPT.
+- Advanced safety measures to detect the safety of the code generated.
 
 
 ## License and Author
