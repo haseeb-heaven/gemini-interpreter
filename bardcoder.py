@@ -27,7 +27,10 @@ def bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
         
         # Setting the prompt.
-        bard_coder.set_prompt(prompt)
+        prompt_status = bard_coder.set_prompt(prompt)
+        if not prompt_status:
+            print("BardCoder: " + "Error while setting prompt.\nCheck the API key is valid and prompt is not empty")
+            return None, None, False
 
         # Get the code from the response.
         code = bard_coder.get_code()
@@ -146,8 +149,14 @@ if __name__ == "__main__":
                 
         # Clear the previous cache.
         subprocess.call(['bash', 'bash_src/clear_cache.sh'])
-        prompt = input("Prompt: ")
-        
+        #prompt = input("Prompt: ")
+        prompt = """
+Follow the commands use Pyhton language.
+1. Get latest trends from Google.
+2.Generate eye catching Tweets using these trends for 5 tweets limit.
+3.Show all the 5 tweets in output.
+4.Save those to a file called "tweets_5.txt".
+        """
         # Setting filenames for single/multiple code choices and output.
         code_file = "code_generated" # Filename of code. [Remeber no extension]
         code_choices = "code_choice" # Filename of code choices.

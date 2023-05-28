@@ -70,8 +70,11 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
 
         # Setting the prompt.
-        bard_coder.set_prompt(prompt)
-
+        prompt_status = bard_coder.set_prompt(prompt)
+        if not prompt_status:
+            st.error("Error while setting prompt.\nCheck the API key is valid and prompt is not empty")
+            st.stop()
+        
         # Get the code from the response.
         code = bard_coder.get_code()
         # Save the code to file
@@ -391,6 +394,12 @@ if __name__ == "__main__":
 
         # Seting application to run
         if st.button("Run"):
+            # Check if API Key is empty
+            if bard_api_key is None or bard_api_key == "" or bard_api_key.__len__() == 0:
+              st.error("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
+              bard_coder.add_log("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
+              st.stop()
+              
             # Clear the previous cache.
             st.code("Running the code generator", language="python")
             subprocess.call(['bash', 'bash_src/clear_cache.sh'])

@@ -94,7 +94,7 @@ class BardCoder:
                                 self.add_log(f"Init: Factuality Query: {factualityQuery}")
                             # Get the links from the response.
                             links = self.get_links()
-                            self.add_log(f"set_prompt: Links: {links}")
+                            self.add_log(f"Init: Links: {links}")
 
                         # Get the text query from the response.
                         self.text_query = json_data['textQuery']
@@ -110,10 +110,16 @@ class BardCoder:
 
                         # Mark end of init. - Success
                         self.add_log("Init: Success.")
+                        return True
                     else:
                         self.add_log("Init: Json data is empty.")
+                        return False
                 else:
                     self.add_log("Init: Data is empty.")
+                    return False
+            else:
+                self.add_log("Init: Response is empty.\nCheck the API key is valid.")
+                return False
 
         except Exception as e:
             # show stack trace
@@ -126,8 +132,12 @@ class BardCoder:
         if not prompt:
             self.add_log("get_response: Prompt is empty.")
             return ""
-
-        response = self.bard.get_answer(prompt)
+        if self.bard:
+            self.add_log("get_response: Getting response from bard.")
+            response = self.bard.get_answer(prompt)
+        else:
+            self.add_log("get_response: Bard is not initialized.")
+            return None
 
         # get response from bard
         return response
