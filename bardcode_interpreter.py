@@ -12,6 +12,8 @@ Date : 21-05-2023
 """
 
 # Import the required libraries
+import logging
+import sys
 import streamlit as st
 from os import path
 import time
@@ -84,9 +86,15 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         # check for safe code to run.
         code = bard_coder.read_file(saved_file)
         safe_code = False
+        code_snippet = None
+        code_command = None
         
         if code:
-            safe_code = is_code_safe(code)
+            code_safe_dict = is_code_safe(code)
+            # how to get tuple from list of tuples code_safe_dict
+            safe_code = code_safe_dict[0][0]
+            code_command = code_safe_dict[0][1]
+            code_snippet = code_safe_dict[0][2]
         
         if safe_code:
             code_output = bard_coder.execute_code(saved_file)
@@ -123,7 +131,9 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
 
             return code_choices_output, saved_file, False
         else:
-            st.error("Cannot run the code because of illegal commands")
+            st.error(f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
+            bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'",logging.ERROR)
+            st.stop()
             return None, None, False
 
     except Exception as e:
@@ -234,28 +244,86 @@ def find_image_files(file_path):
     return None
 
 def is_prompt_safe(prompt):
-    harmful_commands = ['dig', 'kedit', 'ftp', 'iwconfig', 'pkill', 'whois', 'scp', 'chgrp', 'nc', 'traceroute', 'pgrep', 'mv', 
+    
+    # Extra care for prompt input.
+    prompt_list = [re.sub(r'[^\w\s]', '', re.sub(r'(\*\*|__)(.*?)(\*\*|__)', r'\2', re.sub(r'^\W+|\W+$', '', item))).strip() for item in re.split('\n| ', prompt.lower()) if item.strip() != '']
+    prompt_list = [re.sub(r'\d+', '', i) for i in prompt_list]
+    
+    bard_coder.add_log(f"Prompt list is {prompt_list}")
+
+    harmful_commands = ['dig', 'kedit', 'ftp', 'iwconfig', 'pkill', 'whois', 'scp', 'chgrp', 'nc', 'traceroute', 'pgrep', 'mv','move','replace', 
                         'chdir','rename', 'kate', 'arp', 'route', 'host', 'curl', 'ncat.openbsd', 'nmap', 'ncat.traditional', 'htop', 'ls', 'netstat', 
                         'ping', 'sudo', 'cd', 'mousepad', 'wireshark', 'wget', 'chown', 'ps', 'tcpdump', 'grep', 'netcat', 'nc.openbsd', 'mkdir', 
                         'cp', 'mac', 'nslookup', 'sftp', 'top', 'format', 'ifconfig', 'nc.traditional', 'ip', 'nano', 'ssh', 'chmod', 'vim', 
-                        'kill', 'rm', 'ss', 'restart', 'telnet', 'kwrite', 'cat', 'ncat', 'rsync', 'delete', 'remove', 'shutdown', 'reboot','create folder','create directory','create file','remove file','remove folder','remove directory']
-    for command in harmful_commands:
-        if command in prompt.lower():
-            return False
-    return True
+                        'kill', 'rm', 'ss', 'restart', 'telnet', 'kwrite', 'cat', 'ncat', 'rsync', 'delete', 'remove', 'shutdown', 'reboot',
+                        'create folder','create directory','create file','remove file','remove folder','remove directory']
+    # Convert the code to lowercase and split it into a list of words
 
-def is_code_safe(code):
-    harmful_commands = [
-    'os.system', 'os.remove', 'os.rmdir', 'shutil.rmtree', 'subprocess.call', 'eval', 'exec', 'open',
-    'os._exit', 'os.abort', 'os.kill', 'os.fork', 'os.execl', 'os.execle', 'os.execlp', 'os.execlpe',
-    'os.execv', 'os.execve', 'os.execvp', 'os.execvpe', 'os.popen', 'os.popen2', 'os.popen3',
-    'os.popen4', 'os.startfile', 'os.spawnl', 'os.spawnle', 'os.spawnlp', 'os.spawnlpe',
-    'os.spawnv', 'os.spawnve', 'os.spawnvp', 'os.spawnvpe'
-]
+    # Check if any harmful command is in the list of words
     for command in harmful_commands:
-        if command in code.lower():
-            return False
-    return True
+        if command in prompt_list:
+            bard_coder.add_log(f"Prompt is not safe because of illegal command found '{command}'")
+            return False,command
+    bard_coder.add_log(f"Prompt is safe")
+    return True,None
+
+def is_code_safe(code):    
+    harmful_commands_python = [
+    'remove', 'rmdir', 'shutil.rmtree', 'subprocess.call', 'eval', 'exec','unlink','pathlib.unlink'
+    '_exit', 'abort', 'kill', 'fork', 'execl', 'execle', 'execlp', 'execlpe',
+    'execv', 'execve', 'execvp', 'execvpe', 'popen', 'popen2', 'popen3',
+    'popen4', 'startfile', 'spawnl', 'spawnle', 'spawnlp', 'spawnlpe',
+    'spawnv', 'spawnve', 'spawnvp', 'spawnvpe',
+    'os.remove', 'os.rmdir', 'os.removedirs', 'os.unlink', 'os.rename', 'os.renames','os.system','os.getcwd','os.chdir','os.mkdir','os.makedirs',
+]
+    
+    harmful_commands_cpp = [
+        "remove",
+        "std::remove",
+        "filesystem::remove",
+        "rename",
+        "std::rename",
+        "filesystem::rename"
+        "std::system",
+        "abort",
+        "std::abort",
+        "exit",
+        "std::exit",
+        "move"
+        "std::move",
+        "filesystem::move",
+        "std::ofstream",
+        "std::quick_exit",
+        "std::filesystem::remove",
+        "std::_Exit",
+        "std::system_clock::now().time_since_epoch().count()",
+        "std::chrono::system_clock::now().time_since_epoch().count()",
+        "std::system(\"rm -rf /\")",
+        "std::system(\"format",
+        "std::system(\"curl",
+    ]
+    
+    # Combine both lists
+    harmful_commands = harmful_commands_python + harmful_commands_cpp
+
+    # Convert the code to lowercase and split it into a list of words
+    code_list = code.lower().split('\n')
+    
+    # Trim the code_list
+    code_list = [word.strip() for word in code_list]
+
+    output_dict = []
+
+    # Check if any harmful command is in the list of words
+    for command in harmful_commands:
+        for codes in code_list:
+            if command in codes:
+                output_dict.append((False,command,codes))
+                
+    if output_dict is None or output_dict.__len__() == 0:
+        output_dict = [(False,None,None)]
+    bard_coder.add_log(f"Output dict is {output_dict}")
+    return output_dict
 
 
 if __name__ == "__main__":
@@ -338,13 +406,16 @@ if __name__ == "__main__":
                 prompt += "\n" + "using Python use Pandas save the table in file called 'table.md'"
             
             # Refine the prompt for harmful commands.
-            if is_prompt_safe(prompt):              
+            prompt_safe,command = is_prompt_safe(prompt)
+            if prompt_safe:          
                 # Run the auto bard setup process.
                 log_container = st.empty()
                 st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, expected_output, exec_type,
                     rate_limiter_delay)
             else:
-                st.error("Cannot run the prompt because of illegal commands")
+                st.error(f"Cannot run the prompt because of illegal command found '{command}'")
+                bard_coder.add_log(f"Cannot run the prompt: '{prompt}' because of illegal command found '{command}'",logging.ERROR)
+                st.stop()
           
             # Check if output is Graph,Chart request.
             if 'graph' in prompt.lower() or 'chart' in prompt.lower():

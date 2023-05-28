@@ -8,3 +8,7 @@
 graph.png
 *.txt
 *.json
+*.csv
+/codes/*
+/response/*
+/uploads/*
