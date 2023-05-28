@@ -4,7 +4,7 @@
 
 [![Plugin](https://img.shields.io/badge/Code%20Runner-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
 [![Plugin](https://img.shields.io/badge/Code%20Runner-Hosted-blue)](https://autobard-coder.haseebmir.repl.co)
-[![Plugin](https://img.shields.io/badge/Code%20Runner-CodeSpace-blue)]([https://autobard-coder.haseebmir.repl.co](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/))</br>
+[![Plugin](https://img.shields.io/badge/Code%20Runner-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev)</br>
 
 ## General Information
 AutoBard-Coder is a code generator for bard.🙌👩‍💻👨‍💻 It uses the Bard API to interact with bard and refine the results for coding purposes. The main purpose of this is for research and educational purposes. This can generate code from prompts and fix itself unless the code is fixed. It is written in Python and has dependencies on streamlit and bard-coder.
@@ -138,6 +138,21 @@ Some of the features of AutoBard-Coder include:
 - Ability to upload files for data analysis and machine learning.
 - Share code with others with powerered by ShareGPT.
 - Advanced safety measures to detect the safety of the code generated.
+
+## Changelog 📝
+
+All notable changes to this project will be documented in this file.
+
+[CHANGELOGS](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/CHANGELOGS.md)
+
+---
+
+| Version | Date       | Added                                              | Fixed                |
+| ------- | ---------- | -------------------------------------------------- | -------------------- |
+| 1.2     | 2023-05-28 | - Advanced security for code and prompt checking. 🔒<br>- Support for graphs, charts, and tables. 📊<br>- More libraries for data science. 🧬 |                      |
+| 1.1     | 2023-05-27 | - Upload files option. 📤<br>- API key settings. 🔑  | - Error handling from server. 🛠 |
+| 1.0     | 2023-05-26 | - Auto barcode generator. 🏷<br>- Auto barcode interpreter. 🔎 |                      |
+
 
 
 ## License and Author
