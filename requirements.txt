@@ -1,3 +1,14 @@
 streamlit
 bardapi
 pillow
+matplotlib
+pandas
+plotly
+requests
+keras
+scikit-learn
+tabulate
+librosa
+sklearn
+scipy
+tensorflow
