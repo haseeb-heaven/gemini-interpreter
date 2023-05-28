@@ -4,7 +4,7 @@
 
 [![Plugin](https://img.shields.io/badge/Code%20Runner-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
 [![Plugin](https://img.shields.io/badge/Code%20Runner-Hosted-blue)](https://autobard-coder.haseebmir.repl.co)
-[![Plugin](https://img.shields.io/badge/Code%20Runner-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev)</br>
+[![Plugin](https://img.shields.io/badge/Code%20Runner-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/)</br>
 
 ## General Information
 AutoBard-Coder is a code generator for bard.🙌👩‍💻👨‍💻 It uses the Bard API to interact with bard and refine the results for coding purposes. The main purpose of this is for research and educational purposes. This can generate code from prompts and fix itself unless the code is fixed. It is written in Python and has dependencies on streamlit and bard-coder.
