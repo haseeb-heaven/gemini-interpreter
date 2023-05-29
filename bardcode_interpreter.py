@@ -335,9 +335,42 @@ def is_code_safe(code):
     bard_coder.add_log(f"Output dict is {output_dict}")
     return output_dict
 
+def load_css(file_name):
+    # Open the file and read the content
+    with open(file_name) as fp:
+        css = fp.read()
+    # Use st.components.v1.html to load the CSS file
+    st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+
+def display_logo(logo_file: str, title: str):
+    # create two columns
+    col1, col2 = st.columns(2,gap='large')
+
+    # use the first column for the image
+    col1.image(logo_file, width=370)
+
+    # use the second column for the title
+    col2.title(title)
+
+def dsiplay_buttons():
+    col1, col2,col3 = st.columns(3,gap='large')
+
+    with col1: # use the first column
+        run_button = st.button("Run", key="run-button",use_container_width=True) # place the run button as a regular button
+
+    with col2: # use the second column
+        share_button = st.button("Share", key="share-button",use_container_width=True) # place the share button as a regular button
+    
+    with col3:
+        help_button = st.button("Help", key="help-button",use_container_width=True) # place the help button as a regular button
+        
+    return run_button,share_button,help_button
 
 if __name__ == "__main__":
     try:
+        # Load the CSS file named style.css
+        load_css("styles/style.css")
+        
         # Upload file data variables
         upload_prompt_data, upload_data, uploaded_file = None, None, None
 
@@ -348,8 +381,11 @@ if __name__ == "__main__":
         if "messages" not in st.session_state:
             st.session_state.messages = ""
 
-        # Set the page title and description
-        st.title("AutoBard - Code Interpreter")
+        # Set the logo and title
+        logo_file = "resources/logo.png"
+        title = "Code Interpreter"
+        display_logo(logo_file, title)
+        
         prompt = st.text_area("Enter your prompt here:")
         bard_api_key = ""
 
@@ -392,8 +428,13 @@ if __name__ == "__main__":
             if bard_api_key:
                 bard_coder.set_api_key(bard_api_key)
 
+        # Setting the buttons for the application
+        run_button,share_button,help_button = dsiplay_buttons()
+        
         # Seting application to run
-        if st.button("Run"):
+        if run_button:
+            # Code to execute when the "Run" button is clicked
+
             # Check if API Key is empty
             if bard_api_key is None or bard_api_key == "" or bard_api_key.__len__() == 0:
               st.error("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
@@ -449,9 +490,9 @@ if __name__ == "__main__":
                     st.markdown(table_file_data)
 
         # Adding Share button
-        if st.button("Share"):
-            if st.session_state.code_output is None and st.session_state.messages is None:
-                st.code("Please run the code generator first", language="python")
+        if share_button:
+            if st.session_state.code_output is None or st.session_state.messages is None:
+                st.error("Error: Please run the code generator first")
             else:
                 gpt_data = prompt
                 human_data = ""
@@ -462,11 +503,20 @@ if __name__ == "__main__":
                     human_data += "\nOutput:\n" + st.session_state.code_output
                 human_data += "\n\n[AutoBard-Coder: Repo](https://github.com/haseeb-heaven/AutoBard-Coder)"
 
-                sharegpt_url = sharegpt_get_url(gpt_data, human_data)
-                # st.code(sharegpt_url, language="python")
-                st.code(f"ShareGPT Url: {sharegpt_url}", language="python")
+                if  gpt_data.__len__() > 0 and human_data.__len__() > 0:
+                    sharegpt_url = sharegpt_get_url(gpt_data, human_data)
+                    st.code(f"ShareGPT Url: {sharegpt_url}", language="python")
+                else:
+                    st.error("Error: Please run the code generator first")
+                
+        # Adding Help button
+        if help_button:
+            content_file = "README.md"
+            content_data = bard_coder.read_file(content_file)
+            st.markdown(content_data, unsafe_allow_html=True)
 
     except Exception as e:
         # show_outputf the stack trace
         stack_trace = traceback.format_exc()
-        st.code(stack_trace, language="python")
+        st.error("Error: " + str(e))
+        bard_coder.add_log(stack_trace,logging.ERROR)

@@ -1,0 +1,40 @@
+body {
+	font-family: 'Pacifico', cursive;
+}
+
+h1 {
+	font-family: 'Pacifico', cursive;
+	font-size: 40px;
+	color: #333333;
+}
+
+.main {
+	background-color: #0a5635a6;
+	padding: 20px;
+}
+
+div.st-expander-header {
+	background-color: #0a5635a6;
+	color: #ffffff73;
+	padding: 10px;
+	border-radius: 5px;
+}
+
+button.stButton.run-button,
+button.stButton.share-button {
+	background-color: #0a5635a6;
+	color: #ffffff73;
+	padding: 10px 20px;
+	border: 2px solid #0a5635a6;
+	border-radius: 5px;
+	cursor: pointer;
+}
+
+textarea.stTextArea,
+input.stTextInput,
+div.stAlert div {
+	background-color: #f6f8eaae;
+	color: #0a5635a6;
+	padding: 10px;
+	font-size: 10px;
+}
