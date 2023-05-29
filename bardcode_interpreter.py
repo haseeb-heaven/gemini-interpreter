@@ -28,15 +28,15 @@ from PIL import Image
 # Initialize the bard coder
 bard_coder = BardCoder(enable_logs=True)
 
+ # The input limit of Bard is 4,000 character (As per the Bard API documentation)
+ # But you can give more input upto 10,000 characters. so we are gonna stick to that.
+BARD_FILE_SIZE_LIMIT = 10000
+
 # Function to measure the accuracy of the code
-
-
 def measure_accuracy(counter):
     accuracy = 1 / (counter + 1)
     accuracy_percentage = accuracy * 100
-    st.code(
-        f"Output has been fixed {counter} times with accuracy {accuracy_percentage:.0f}%",
-        language="python")
+    st.info(f"Output has been fixed {counter} times with accuracy {accuracy_percentage:.0f}%")
 
 
 def show_content(content):
@@ -46,18 +46,6 @@ def show_content(content):
 
     # Display the Markdown text in the app
     st.markdown(markdown_text)
-
-
-# Initialize an empty string to hold the messages
-global log_container
-messages = ""
-
-
-def show_output(message):
-    global messages
-    messages += message + "\n"
-    st.session_state.messages = messages
-    log_container.code(st.session_state.messages, language="python")
 
 
 # method to execute the bard coder process
@@ -80,12 +68,12 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         # Save the code to file
         saved_file = bard_coder.save_code(code_file, code)
         if saved_file:
-            show_output(f"Code saved to file {saved_file}")
+            st.info(f"Code saved to file {saved_file}")
         else:
-            show_output("Code not saved to file")
+            st.info("Code not saved to file")
+            return None, None, False
 
-        show_output("Executing primary code")
-        
+        st.info("Executing primary code")
         # check for safe code to run.
         code = bard_coder.read_file(saved_file)
         safe_code = False
@@ -104,7 +92,7 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
             code_output = bard_coder.execute_code(saved_file)
             if code_output and code_output != None and code_output.__len__() > 0:
                 if 'error' in code_output.lower() or 'exception' in code_output.lower():
-                    show_output(f"Error in executing code with type {exec_type}")
+                    st.info(f"Error in executing code with type {exec_type}")
                     return code_output, saved_file, False
 
                 # Check if expected output is in code output.
@@ -124,10 +112,10 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
             if exec_type == 'multiple':
                 bard_coder.save_code_choices(code_choices)
 
-                show_output("Executing code choices")
+                st.info("Executing code choices")
                 code_choices_output = bard_coder.execute_code_choices()
                 code_choices_output.append(code_output)
-                show_output(f"Output: {code_choices_output}")
+                st.info(f"Output: {code_choices_output}")
 
             # Execute all the code and code choices.
             # bard_coder.execute_code_choices()
@@ -149,8 +137,8 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
     except Exception as e:
         # show_outputf the stack trace
         stack_trace = traceback.format_exc()
-        show_output(stack_trace)
-        show_output(str(e))
+        st.info(stack_trace)
+        st.info(str(e))
 
 
 # method to execute the bard coder process
@@ -163,11 +151,15 @@ def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expec
     # Start the bard coder process
     code_choices_output, saved_file, status = auto_bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
     code_output = None
-
+    
+    # Check if file is saved.
+    if not saved_file:
+        return code_choices_output, saved_file, status
+    
     if status:
-        show_output(f"Expected output found in file {saved_file}\nOutput: {code_choices_output}")
+        st.info(f"Expected output found in file {saved_file}\nOutput: {code_choices_output}")
     else:
-        show_output(f"Expected output not found in file {saved_file}\nOutput: {code_choices_output}")
+        st.info(f"Expected output not found in file {saved_file}\nOutput: {code_choices_output}")
         if code_choices_output:
             code_output = ''.join(code_choices_output)
         if code_output and code_output != None and code_output.__len__() > 0:
@@ -180,7 +172,7 @@ def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expec
 
             if code_output:
                 while 'error' in code_output.lower() or 'exception' in code_output.lower():
-                    show_output(
+                    st.info(
                         "Error in executing code,Trying to fix the code with error")
 
                     # Re-prompt on error.
@@ -195,16 +187,15 @@ def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expec
                     time.sleep(rate_limiter_delay)
                     test_cases_output += 1
 
-            show_output("Code has been fixed for error")
-            st.code(code_output, language="python")
+            st.info("Code has been fixed for errors")
+            st.code(code_output,language="python")
 
             # Check for expected output.
             if code_output and expected_output and code_output.__len__() > 0:
 
                 # While expected output does not contain in code output.
                 while expected_output not in code_output:
-                    show_output(
-                        f"Expected output {expected_output} not found in code\nOutput: {code_output}")
+                    st.info(f"Expected output {expected_output} not found in code\nOutput: {code_output}")
 
                     # Re-prompt on expected output not found.
                     code = bard_coder.get_code()
@@ -219,12 +210,12 @@ def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expec
                     time.sleep(rate_limiter_delay)
                     test_cases_output += 1
 
-                show_output("Code has been fixed for expected output")
-                st.code(code_output, language="python")
+                st.info("Code has been fixed for expected output")
+                st.info(code_output)
             else:
-                show_output("Not checking for code expected output")
+                st.info("Not checking for code expected output")
         else:
-            show_output("Code output is empty for error")
+            st.info("Code output is empty for error")
 
     # Print output and information.
     measure_accuracy(test_cases_output)
@@ -285,6 +276,7 @@ def is_code_safe(code):
     'popen4', 'startfile', 'spawnl', 'spawnle', 'spawnlp', 'spawnlpe',
     'spawnv', 'spawnve', 'spawnvp', 'spawnvpe',
     'os.remove', 'os.rmdir', 'os.removedirs', 'os.unlink', 'os.rename', 'os.renames','os.system','os.chdir','os.mkdir','os.makedirs',
+    'bardcode_interpreter.py','bardcoder.py','bardcoder_lib.py','bardcoder','bardcoder_lib','bardcode_interpreter',
 ]
     
     harmful_commands_cpp = [
@@ -352,20 +344,37 @@ def display_logo(logo_file: str, title: str):
     # use the second column for the title
     col2.title(title)
 
-def dsiplay_buttons():
+def dsiplay_buttons(is_prompt_valid:bool):
     col1, col2,col3 = st.columns(3,gap='large')
 
     with col1: # use the first column
-        run_button = st.button("Run", key="run-button",use_container_width=True) # place the run button as a regular button
+        run_button = st.button("Run", key="run-button",use_container_width=True,disabled=not is_prompt_valid) # place the run button as a regular button
 
     with col2: # use the second column
-        share_button = st.button("Share", key="share-button",use_container_width=True) # place the share button as a regular button
+        share_button = st.button("Share", key="share-button",use_container_width=True,disabled=not is_prompt_valid) # place the share button as a regular button
     
     with col3:
         help_button = st.button("Help", key="help-button",use_container_width=True) # place the help button as a regular button
         
     return run_button,share_button,help_button
 
+def init_session_state():
+    # Initialize the session state variables
+    if "code_output" not in st.session_state:
+        st.session_state.code_output = ""
+
+    if "messages" not in st.session_state:
+        st.session_state.messages = ""
+
+    if "text_area" not in st.session_state:
+        st.session_state.text_area = ""
+        
+    if "file_size" not in st.session_state:
+        st.session_state.file_size = 0
+
+    if "file_char_count" not in st.session_state:
+        st.session_state.file_char_count = 0
+        
 if __name__ == "__main__":
     try:
         # Load the CSS file named style.css
@@ -375,20 +384,42 @@ if __name__ == "__main__":
         upload_prompt_data, upload_data, uploaded_file = None, None, None
 
         # Initialize the session state variables
-        if "code_output" not in st.session_state:
-            st.session_state.code_output = ""
-
-        if "messages" not in st.session_state:
-            st.session_state.messages = ""
-
+        init_session_state()
+        
         # Set the logo and title
         logo_file = "resources/logo.png"
         title = "Code Interpreter"
         display_logo(logo_file, title)
         
-        prompt = st.text_area("Enter your prompt here:")
-        bard_api_key = ""
+        # Use the text_area variable from the session state for input
+        prompt = st.text_area(placeholder="Enter your prompt here", label="Prompt",label_visibility="hidden", height=300, key="text_area_input",value=st.session_state.text_area)
+        
+        # check if prompt is changed.
+        if prompt != st.session_state.text_area:
+            st.session_state.text_area = prompt
+            
+        character_count:int = len(st.session_state.text_area)
+        
+        # Status info message. (Char count and file size)
+        status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
+        
+        if st.session_state.file_size > 0:
+            bard_coder.add_log(f"File Char count is {st.session_state.file_char_count}")
+            character_count += st.session_state.file_char_count
+            # Update the character count for file size.
+            status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
+            status_info_msg += " | " + f"File Size is {st.session_state.file_size/1024:.2f}Kb | {st.session_state.file_size/1024/1024:.2f}Mb"
 
+        st.info(status_info_msg) 
+        
+        # check the Prompt for safety and file size exceeding 4,000 characters.
+        prompt_safe,command = is_prompt_safe(prompt)
+        if not prompt_safe:
+            st.error(f"Error in prompt because of illegal command found '{command}'")
+        
+        if character_count > BARD_FILE_SIZE_LIMIT or st.session_state.file_char_count > BARD_FILE_SIZE_LIMIT:
+            st.error(f"Error in prompt The file size limit exceeded {BARD_FILE_SIZE_LIMIT} characters")
+        
         # Setting options for the application
         with st.expander("Options"):
             code_file = st.text_input("Filename for the generated code (without extension):",value="generated_code")
@@ -403,10 +434,16 @@ if __name__ == "__main__":
 
                 # To read file as bytes:
                 bytes_data = uploaded_file.getvalue()
+                # get the file size
+                st.session_state.file_size = uploaded_file.size
+                
                 # To convert to a string based IO:
                 stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
                 # To read file as string:
                 upload_data = stringio.read()
+                
+                # Count the number of characters in the file
+                st.session_state.file_char_count = len(upload_data)
 
                 # write the file to uploads directory
                 with open("uploads/" + uploaded_file.name, "w") as f:
@@ -415,7 +452,9 @@ if __name__ == "__main__":
                 # Display a success message
                 st.success("File uploaded successfully.")
 
-        # Setting the settings for the application
+        # Setting the bard api key settings. Make sure its not stored in session state.
+        bard_api_key = ""
+        
         with st.expander("Settings"):
             bard_key_help_text = """
       How to obtain Google Bard API key.
@@ -423,13 +462,13 @@ if __name__ == "__main__":
       2. Go to Application → Cookies and copy the __Secure-1PSID value
       3. This is your API key paste it below.
       """
-            st.code(bard_key_help_text, language="python")
-            bard_api_key = st.text_input("Bard API key:", type="password")
+            st.info(bard_key_help_text)
+            bard_api_key = st.text_input(label="API Key",label_visibility="hidden", type="password",placeholder="Enter your bard API key.")
             if bard_api_key:
                 bard_coder.set_api_key(bard_api_key)
 
         # Setting the buttons for the application
-        run_button,share_button,help_button = dsiplay_buttons()
+        run_button,share_button,help_button = dsiplay_buttons(prompt_safe and st.session_state.file_char_count < BARD_FILE_SIZE_LIMIT)
         
         # Seting application to run
         if run_button:
@@ -442,7 +481,7 @@ if __name__ == "__main__":
               st.stop()
               
             # Clear the previous cache.
-            st.code("Running the code interpreter", language="python")
+            st.info("Running the code interpreter...")
             subprocess.call(['bash', 'bash_src/clear_cache.sh'])
 
             # Append the uploaded file data to prompt
@@ -463,7 +502,6 @@ if __name__ == "__main__":
                 prompt += "\n" + "using Python use Pandas save the table in file called 'table.md'"
             
             # Refine the prompt for harmful commands.
-            prompt_safe,command = is_prompt_safe(prompt)
             if prompt_safe:          
                 # Run the auto bard setup process.
                 log_container = st.empty()
@@ -505,7 +543,7 @@ if __name__ == "__main__":
 
                 if  gpt_data.__len__() > 0 and human_data.__len__() > 0:
                     sharegpt_url = sharegpt_get_url(gpt_data, human_data)
-                    st.code(f"ShareGPT Url: {sharegpt_url}", language="python")
+                    st.info(f"ShareGPT Url: {sharegpt_url}")
                 else:
                     st.error("Error: Please run the code generator first")
                 
