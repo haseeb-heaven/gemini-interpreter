@@ -359,7 +359,7 @@ def dsiplay_buttons(is_prompt_valid: bool):
 
 
 def init_bard_coder_session(api_key=None, timeout=10):
-    # Initialize the bard coder
+    # Initialize the bard coder session
     bard_coder = BardCoder(api_key=api_key, enable_logs=True, timeout=timeout)
     return bard_coder
 
@@ -368,6 +368,9 @@ def init_session_state():
   # Initialize the session state variables
     if "bard_coder" not in st.session_state:
         st.session_state.bard_coder = None
+    
+    if "api_key_initialized" not in st.session_state:
+        st.session_state.api_key_initialized = False
 
     if "code_output" not in st.session_state:
         st.session_state.code_output = ""
@@ -422,8 +425,7 @@ if __name__ == "__main__":
             character_count += st.session_state.file_char_count
             # Update the character count for file size.
             status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
-            status_info_msg += " | " + \
-                f"File Size is {st.session_state.file_size/1024:.2f}Kb | {st.session_state.file_size/1024/1024:.2f}Mb"
+            status_info_msg += " | " + f"File Size is {st.session_state.file_size/1024:.2f}Kb | {st.session_state.file_size/1024/1024:.2f}Mb"
 
         st.info(status_info_msg)
 
@@ -474,9 +476,6 @@ if __name__ == "__main__":
                 # Display a success message
                 st.success("File uploaded successfully.")
 
-        # Setting the bard api key settings. Make sure its not stored in session state.
-        bard_api_key = ""
-
         with st.expander("Settings"):
             bard_key_help_text = """
       How to obtain Google Bard API key.
@@ -485,13 +484,15 @@ if __name__ == "__main__":
       3. This is your API key paste it below.
       """
             st.info(bard_key_help_text)
-            bard_api_key = st.text_input(
-                label="API Key", label_visibility="hidden", type="password", placeholder="Enter your bard API key.")
-            if bard_api_key:
+            bard_api_key = st.text_input(label="API Key", label_visibility="hidden", type="password", placeholder="Enter your bard API key.")
+            
+            if bard_api_key and not st.session_state.api_key_initialized:
                 st.session_state.bard_coder = init_bard_coder_session(bard_api_key)
                 if st.session_state.bard_coder:
+                    st.session_state.api_key_initialized = True
                     st.info("Bard Coder initialized successfully")
                 else:
+                    st.session_state.api_key_initialized = False
                     st.error("Error initializing Bard Coder")
                   
 
