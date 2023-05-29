@@ -23,10 +23,10 @@ import subprocess
 from io import StringIO
 import re
 from lib.sharegpt_api import sharegpt_get_url
+from lib.blacklist_commands import harmful_commands_python, harmful_commands_cpp, harmful_prompts
 from PIL import Image
-
-# Initialize the bard coder
-bard_coder = BardCoder(enable_logs=True)
+import tokenize
+import io
 
  # The input limit of Bard is 4,000 character (As per the Bard API documentation)
  # But you can give more input upto 10,000 characters. so we are gonna stick to that.
@@ -58,15 +58,15 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
 
         # Setting the prompt.
-        prompt_status,error_reason = bard_coder.set_prompt(prompt)
+        prompt_status,error_reason = st.session_state.bard_coder.set_prompt(prompt)
         if not prompt_status:
             st.error(f"Error no data was recieved from Server, Reason {error_reason}")
             st.stop()
         
         # Get the code from the response.
-        code = bard_coder.get_code()
+        code = st.session_state.bard_coder.get_code()
         # Save the code to file
-        saved_file = bard_coder.save_code(code_file, code)
+        saved_file = st.session_state.bard_coder.save_code(code_file, code)
         if saved_file:
             st.info(f"Code saved to file {saved_file}")
         else:
@@ -75,7 +75,7 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
 
         st.info("Executing primary code")
         # check for safe code to run.
-        code = bard_coder.read_file(saved_file)
+        code = st.session_state.bard_coder.read_file(saved_file)
         safe_code = False
         code_snippet = None
         code_command = None
@@ -83,13 +83,13 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
         
         if code:
             safe_code_dict = is_code_safe(code)
-            # how to get tuple from list of tuples code_safe_dict
+            # Get tuple from list of tuples code_safe_dict
             safe_code = safe_code_dict[0][0]
             code_command = safe_code_dict[0][1]
             code_snippet = safe_code_dict[0][2]
         
         if safe_code:
-            code_output = bard_coder.execute_code(saved_file)
+            code_output = st.session_state.bard_coder.execute_code(saved_file)
             if code_output and code_output != None and code_output.__len__() > 0:
                 if 'error' in code_output.lower() or 'exception' in code_output.lower():
                     st.info(f"Error in executing code with type {exec_type}")
@@ -110,15 +110,12 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
 
             # Save all the code choices to file
             if exec_type == 'multiple':
-                bard_coder.save_code_choices(code_choices)
+                st.session_state.bard_coder.save_code_choices(code_choices)
 
                 st.info("Executing code choices")
-                code_choices_output = bard_coder.execute_code_choices()
+                code_choices_output = st.session_state.bard_coder.execute_code_choices()
                 code_choices_output.append(code_output)
                 st.info(f"Output: {code_choices_output}")
-
-            # Execute all the code and code choices.
-            # bard_coder.execute_code_choices()
 
             return code_choices_output, saved_file, False
         else:
@@ -130,7 +127,7 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
                 code_command = safe_codes[1]
                 code_snippet = safe_codes[2]
                 st.error(f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
-                bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'",logging.ERROR)
+                st.session_state.bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'",logging.ERROR)
             st.stop()
             return None, None, False
 
@@ -142,7 +139,7 @@ def auto_bard_execute(prompt,code_file='code.txt',code_choices='code_choice',exp
 
 
 # method to execute the bard coder process
-def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expected_output=None,xec_type='single',ate_limiter_delay=5):
+def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expected_output=None,exec_type='single',rate_limiter_delay=5):
 
     # Append the codes directory to filename
     code_file = path.join("codes", code_file)
@@ -176,7 +173,7 @@ def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expec
                         "Error in executing code,Trying to fix the code with error")
 
                     # Re-prompt on error.
-                    code = bard_coder.get_code()
+                    code = st.session_state.bard_coder.get_code()
                     prompt = f"I got error while running the code {code_output}.\nPlease fix the code ``\n`{code}\n``` \nand try again.\nHere is error {code_output}\n\n" + \
                         "Note:The output should only be fixed code and nothing else. No explanation or anything else."
 
@@ -198,13 +195,12 @@ def auto_bard_setup(prompt,code_file='code.txt',code_choices='code_choice',expec
                     st.info(f"Expected output {expected_output} not found in code\nOutput: {code_output}")
 
                     # Re-prompt on expected output not found.
-                    code = bard_coder.get_code()
+                    code = st.session_state.bard_coder.get_code()
                     prompt = f"I got output {code_output}.\nPlease fix the code ``\n`{code}\n```  \nand try again.\nHere is expected output: {code_output}\n\n" + \
                         "Note:The output should only be fixed code and nothing else. No explanation or anything else."
 
                     # start the bard coder process again.
-                    code_output, saved_file, status = auto_bard_execute(
-                        prompt, code_file, code_choices, expected_output, exec_type)
+                    code_output, saved_file, status = auto_bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
 
                     # Sleep for N seconds before re-prompting. Dont get Rate limited.
                     time.sleep(rate_limiter_delay)
@@ -245,86 +241,60 @@ def find_image_files(file_path):
     return None
 
 def is_prompt_safe(prompt):
+    st.session_state.bard_coder.add_log("Checking prompt for safety")
     
     # Extra care for prompt input.
     prompt_list = [re.sub(r'[^\w\s]', '', re.sub(r'(\*\*|__)(.*?)(\*\*|__)', r'\2', re.sub(r'^\W+|\W+$', '', item))).strip() for item in re.split('\n| ', prompt.lower()) if item.strip() != '']
     prompt_list = [re.sub(r'\d+', '', i) for i in prompt_list]
     
-    bard_coder.add_log(f"Prompt list is {prompt_list}")
+    st.session_state.bard_coder.add_log(f"Prompt list is {prompt_list}")
 
-    harmful_commands = ['dig', 'kedit', 'ftp', 'iwconfig', 'pkill', 'whois', 'scp', 'chgrp', 'nc', 'traceroute', 'pgrep', 'mv','move','replace', 
-                        'chdir','rename', 'kate', 'arp', 'route', 'host', 'curl', 'ncat.openbsd', 'nmap', 'ncat.traditional', 'htop', 'ls', 'netstat', 
-                        'ping', 'sudo', 'cd', 'mousepad', 'wireshark', 'wget', 'chown', 'ps', 'tcpdump', 'grep', 'netcat', 'nc.openbsd', 'mkdir', 
-                        'cp', 'mac', 'nslookup', 'sftp', 'top', 'format', 'ifconfig', 'nc.traditional', 'ip', 'nano', 'ssh', 'chmod', 'vim', 
-                        'kill', 'rm', 'ss', 'restart', 'telnet', 'kwrite', 'cat', 'ncat', 'rsync', 'delete', 'remove', 'shutdown', 'reboot',
-                        'create folder','create directory','create file','remove file','remove folder','remove directory']
     # Convert the code to lowercase and split it into a list of words
 
     # Check if any harmful command is in the list of words
-    for command in harmful_commands:
+    for command in harmful_prompts:
         if command in prompt_list:
-            bard_coder.add_log(f"Prompt is not safe because of illegal command found '{command}'")
+            st.session_state.bard_coder.add_log(f"Prompt is not safe because of illegal command found '{command}'")
             return False,command
-    bard_coder.add_log(f"Prompt is safe")
+    st.session_state.bard_coder.add_log(f"Input Prompt is safe")
     return True,None
 
-def is_code_safe(code):    
-    harmful_commands_python = [
-    'remove', 'rmdir', 'shutil.rmtree', 'subprocess.call', 'eval', 'exec','unlink','pathlib.unlink'
-    '_exit', 'abort', 'kill', 'fork', 'execl', 'execle', 'execlp', 'execlpe',
-    'execv', 'execve', 'execvp', 'execvpe', 'popen', 'popen2', 'popen3',
-    'popen4', 'startfile', 'spawnl', 'spawnle', 'spawnlp', 'spawnlpe',
-    'spawnv', 'spawnve', 'spawnvp', 'spawnvpe',
-    'os.remove', 'os.rmdir', 'os.removedirs', 'os.unlink', 'os.rename', 'os.renames','os.system','os.chdir','os.mkdir','os.makedirs',
-    'bardcode_interpreter.py','bardcoder.py','bardcoder_lib.py','bardcoder','bardcoder_lib','bardcode_interpreter',
-]
-    
-    harmful_commands_cpp = [
-        "remove",
-        "std::remove",
-        "filesystem::remove",
-        "rename",
-        "std::rename",
-        "filesystem::rename"
-        "std::system",
-        "abort",
-        "std::abort",
-        "exit",
-        "std::exit",
-        "move"
-        "std::move",
-        "filesystem::move",
-        "std::ofstream",
-        "std::quick_exit",
-        "std::filesystem::remove",
-        "std::_Exit",
-        "std::system_clock::now().time_since_epoch().count()",
-        "std::chrono::system_clock::now().time_since_epoch().count()",
-        "std::system(\"rm -rf /\")",
-        "std::system(\"format",
-        "std::system(\"curl",
-    ]
+def tokenize_source_code(source_code):
+    tokens = []
+    try:
+        for token in tokenize.generate_tokens(io.StringIO(source_code).readline):
+            if token.type not in [tokenize.ENCODING, tokenize.NEWLINE, tokenize.INDENT, tokenize.DEDENT]:
+                if any(char in token.string for char in ['::', '.', '->', '_']) or token.string.isalnum():
+                    token_str = re.sub(r'\'|\"', '', token.string)
+                    tokens.append(token_str)
+    except tokenize.TokenError:
+        st.session_state.bard_coder.add_log("Error parsing the tokens")
+    if tokens:
+        tokens = list(([token.lower() for token in tokens]))
+    st.session_state.bard_coder.add_log(f"Tokenise was called and Tokens length is {tokens.__len__()}")
+    return tokens
+
+def is_code_safe(code): 
+    st.session_state.bard_coder.add_log("Checking code for safety")
     
     # Combine both lists
-    harmful_commands = harmful_commands_python + harmful_commands_cpp
+    harmful_code_commands = harmful_commands_python + harmful_commands_cpp
 
-    # Convert the code to lowercase and split it into a list of words
-    code_list = code.lower().split('\n')
-    
-    # Trim the code_list
-    code_list = [word.strip() for word in code_list]
+    # Tokenize the code
+    tokens_list = tokenize_source_code(code)
 
+    # Initialize the output dictionary
     output_dict = []
 
     # Check if any harmful command is in the list of words
-    for command in harmful_commands:
-        for codes in code_list:
-            if command in codes:
-                output_dict.append((False,command,codes))
+    for command in harmful_code_commands:
+        for token in tokens_list:
+            if command == token:
+                output_dict.append((False,command,token))
                 
     if output_dict is None or output_dict.__len__() == 0:
         output_dict = [(True,None,None)]
-    bard_coder.add_log(f"Output dict is {output_dict}")
+    st.session_state.bard_coder.add_log(f"Output dict is {output_dict}")
     return output_dict
 
 def load_css(file_name):
@@ -360,6 +330,11 @@ def dsiplay_buttons(is_prompt_valid:bool):
 
 def init_session_state():
     # Initialize the session state variables
+    if "bard_coder" not in st.session_state:
+        # Initialize the bard coder
+        bard_coder = BardCoder(enable_logs=True)
+        st.session_state.bard_coder = bard_coder
+    
     if "code_output" not in st.session_state:
         st.session_state.code_output = ""
 
@@ -392,10 +367,11 @@ if __name__ == "__main__":
         display_logo(logo_file, title)
         
         # Use the text_area variable from the session state for input
-        prompt = st.text_area(placeholder="Enter your prompt here", label="Prompt",label_visibility="hidden", height=300, key="text_area_input",value=st.session_state.text_area)
+        prompt = st.text_area(placeholder="Enter your prompt here", label="Prompt",label_visibility="hidden", height=300, key="text_area_input")
         
         # check if prompt is changed.
         if prompt != st.session_state.text_area:
+            st.session_state.bard_coder.add_log(f"Prompt changed from '{st.session_state.text_area}' to '{prompt}'")
             st.session_state.text_area = prompt
             
         character_count:int = len(st.session_state.text_area)
@@ -404,7 +380,7 @@ if __name__ == "__main__":
         status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
         
         if st.session_state.file_size > 0:
-            bard_coder.add_log(f"File Char count is {st.session_state.file_char_count}")
+            st.session_state.bard_coder.add_log(f"File Char count is {st.session_state.file_char_count}")
             character_count += st.session_state.file_char_count
             # Update the character count for file size.
             status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
@@ -465,7 +441,7 @@ if __name__ == "__main__":
             st.info(bard_key_help_text)
             bard_api_key = st.text_input(label="API Key",label_visibility="hidden", type="password",placeholder="Enter your bard API key.")
             if bard_api_key:
-                bard_coder.set_api_key(bard_api_key)
+                st.session_state.bard_coder.set_api_key(bard_api_key)
 
         # Setting the buttons for the application
         run_button,share_button,help_button = dsiplay_buttons(prompt_safe and st.session_state.file_char_count < BARD_FILE_SIZE_LIMIT)
@@ -477,7 +453,7 @@ if __name__ == "__main__":
             # Check if API Key is empty
             if bard_api_key is None or bard_api_key == "" or bard_api_key.__len__() == 0:
               st.error("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
-              bard_coder.add_log("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
+              st.session_state.bard_coder.add_log("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
               st.stop()
               
             # Clear the previous cache.
@@ -509,21 +485,21 @@ if __name__ == "__main__":
                     rate_limiter_delay)
             else:
                 st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
-                bard_coder.add_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'",logging.ERROR)
+                st.session_state.bard_coder.add_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'",logging.ERROR)
                 st.stop()
           
             # Check if output is Graph,Chart request.
             if 'graph' in prompt.lower() or 'chart' in prompt.lower():
                 image_file_graph = find_image_files(saved_file)
                 if image_file_graph:
-                    bard_coder.add_log(f"Graph image file is {image_file_graph} and code file is {saved_file}")
+                    st.session_state.bard_coder.add_log(f"Graph image file is {image_file_graph} and code file is {saved_file}")
                     image = Image.open(image_file_graph)
                     st.image(image, caption='Graph Output')
             
             # Check if output in Table request.
             if 'table' in prompt.lower():
                 table_file = "table.md"
-                table_file_data = bard_coder.read_file(table_file)
+                table_file_data = st.session_state.bard_coder.read_file(table_file)
                 if table_file_data:
                     st.markdown(table_file_data)
 
@@ -539,7 +515,7 @@ if __name__ == "__main__":
                     human_data = "Bard Logs: \n" + st.session_state.messages
                 if st.session_state.code_output:
                     human_data += "\nOutput:\n" + st.session_state.code_output
-                human_data += "\n\n[AutoBard-Coder: Repo](https://github.com/haseeb-heaven/AutoBard-Coder)"
+                human_data += "\n\n[AutoBard-Coder: Repo](https:#github.com/haseeb-heaven/AutoBard-Coder)"
 
                 if  gpt_data.__len__() > 0 and human_data.__len__() > 0:
                     sharegpt_url = sharegpt_get_url(gpt_data, human_data)
@@ -550,11 +526,11 @@ if __name__ == "__main__":
         # Adding Help button
         if help_button:
             content_file = "README.md"
-            content_data = bard_coder.read_file(content_file)
+            content_data = st.session_state.bard_coder.read_file(content_file)
             st.markdown(content_data, unsafe_allow_html=True)
 
     except Exception as e:
         # show_outputf the stack trace
         stack_trace = traceback.format_exc()
         st.error("Error: " + str(e))
-        bard_coder.add_log(stack_trace,logging.ERROR)
+        st.session_state.bard_coder.add_log(stack_trace,logging.ERROR)
