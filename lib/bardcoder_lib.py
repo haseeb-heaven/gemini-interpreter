@@ -35,7 +35,8 @@ class BardCoder:
     def __init__(self,api_key=None,timeout=10,enable_logs=False):
         try: 
             # Setting up the api key.
-            self.set_api_key(api_key)
+            if api_key:
+                self.set_api_key(api_key)
                 
             # Setting up Bard from BardAPI.
             self.bard = Bard(timeout=timeout)  # Set timeout in seconds
@@ -46,11 +47,12 @@ class BardCoder:
                 
             # Setups the logging.
             self.logger = self.setup_logger("bardcoder.log")
-            self.add_log("Init Starting ...")
+            self.add_log("BardCoder: Init Starting ...")
             
         except Exception as e:
             self.add_log(str(e))
             stack_trace = traceback.format_exc()
+            self.add_log(stack_trace)
     
     # Set the api key
     def set_api_key(self, api_key):

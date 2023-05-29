@@ -333,7 +333,11 @@ def init_session_state():
     if "bard_coder" not in st.session_state:
         # Initialize the bard coder
         bard_coder = BardCoder(enable_logs=True)
-        st.session_state.bard_coder = bard_coder
+        if bard_coder:
+            st.session_state.bard_coder = bard_coder
+        else:
+            st.error("Error initializing Bard Coder")
+            st.close()
     
     if "code_output" not in st.session_state:
         st.session_state.code_output = ""

@@ -4,6 +4,7 @@ harmful_prompts = [
   'remove',
   'shutdown',
   'reboot',
+  'format',
   'halt',
   'poweroff',
   'remove file',
@@ -248,7 +249,6 @@ harmful_commands_python = [
   'crontab',  # Can schedule tasks
   'date',  # Can change the system date and time
   'dd',  # Can write and backup raw disk images
-  'df',  # Can show disk usage
   'dmesg',  # Can show kernel messages
   'fdisk',  # Can manipulate disk partitions
   'fsck',  # Can check and repair file systems
@@ -267,7 +267,6 @@ harmful_commands_python = [
   'mount',  # Can mount file systems
   'netstat',  # Can show network statistics
   'nice',  # Can change process priority
-  'ps',  # Can show running processes
   'pstree',  # Can show running processes as a tree
   'pickle',  # Can execute arbitrary code during unpickling
   'os.popen',  # Can be used to execute shell commands
