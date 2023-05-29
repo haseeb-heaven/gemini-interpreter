@@ -139,6 +139,10 @@ Some of the features of AutoBard-Coder include:
 - Share code with others with powerered by ShareGPT.
 - Advanced safety measures to detect the safety of the code generated.
 
+## Help Section.
+Now you can get help directly from the application. You can get help by clicking on the **Help** button in the UI.
+![code_interpreter_help](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_help.png?raw=true "")</br>
+
 ## Changelog 📝
 
 All notable changes to this project will be documented in this file.

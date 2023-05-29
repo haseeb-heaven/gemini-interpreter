@@ -361,8 +361,6 @@ def get_harmful_prompts():
 
 
 # define method to get the list of harmful commands for python
-
-
 def get_harmful_commands_python():
   return harmful_commands_python
 
