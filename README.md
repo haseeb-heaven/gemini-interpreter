@@ -2,9 +2,10 @@
 ![cover_logo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/logo.png?raw=true "")</br>
 - **Support this Project** <a href="https://www.buymeacoffee.com/haseebheaven"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=haseebheaven&button_colour=40DCA5&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" /></a>
 
-[![Plugin](https://img.shields.io/badge/Code%20Runner-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
-[![Plugin](https://img.shields.io/badge/Code%20Runner-Hosted-blue)](https://autobard-coder.haseebmir.repl.co)
-[![Plugin](https://img.shields.io/badge/Code%20Runner-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/)</br>
+[![Plugin](https://img.shields.io/badge/Auto%20Bard-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
+[![Plugin](https://img.shields.io/badge/Auto%20Bard-Replit-blue)](https://autobard-coder.haseebmir.repl.co)
+[![Plugin](https://img.shields.io/badge/Code%20Interpreter-Hosted-blue)](https://haseeb-heaven-autobard-coder-bardcode-interpreter-5g2n5e.streamlit.app/)
+[![Plugin](https://img.shields.io/badge/Code%20Interpreter-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/)</br>
 
 ## General Information
 AutoBard-Coder is a code generator for bard.🙌👩‍💻👨‍💻 It uses the Bard API to interact with bard and refine the results for coding purposes. The main purpose of this is for research and educational purposes. This can generate code from prompts and fix itself unless the code is fixed. It is written in Python and has dependencies on streamlit and bard-coder.

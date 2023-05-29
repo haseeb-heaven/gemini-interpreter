@@ -488,8 +488,12 @@ if __name__ == "__main__":
             bard_api_key = st.text_input(
                 label="API Key", label_visibility="hidden", type="password", placeholder="Enter your bard API key.")
             if bard_api_key:
-                st.session_state.bard_coder = init_bard_coder_session(
-                    bard_api_key)
+                st.session_state.bard_coder = init_bard_coder_session(bard_api_key)
+                if st.session_state.bard_coder:
+                    st.info("Bard Coder initialized successfully")
+                else:
+                    st.error("Error initializing Bard Coder")
+                  
 
         # Setting the buttons for the application
         run_button, share_button, help_button = dsiplay_buttons(
@@ -580,8 +584,9 @@ if __name__ == "__main__":
         # Adding Help button
         if help_button:
             content_file = "README.md"
-            content_data = st.session_state.bard_coder.read_file(content_file)
-            st.markdown(content_data, unsafe_allow_html=True)
+            if st.session_state.bard_coder:
+                content_data = st.session_state.bard_coder.read_file(content_file)
+                st.markdown(content_data, unsafe_allow_html=True)
 
     except Exception as e:
         # show_outputf the stack trace
