@@ -153,9 +153,11 @@ All notable changes to this project will be documented in this file.
 
 | Version | Date       | Added                                              | Fixed                |
 | ------- | ---------- | -------------------------------------------------- | -------------------- |
+| 1.3     | 2023-05-29 | - **Updated** with totally new _UI_ and _UX_. 🎨<br>- Updated security for code checking and prompt checking. 🔒<br>- Added new Help section. 🆘 |                      |
 | 1.2     | 2023-05-28 | - Advanced security for code and prompt checking. 🔒<br>- Support for graphs, charts, and tables. 📊<br>- More libraries for data science. 🧬 |                      |
-| 1.1     | 2023-05-27 | - Upload files option. 📤<br>- API key settings. 🔑  | - Error handling from server. 🛠 |
-| 1.0     | 2023-05-26 | - Auto barcode generator. 🏷<br>- Auto barcode interpreter. 🔎 |                      |
+| 1.1     | 2023-05-22 | - Upload files option. 📤<br>- API key settings. 🔑  | - Error handling from server. 🛠 |
+| 1.0     | 2023-05-21 | - Auto barcode generator. 🏷<br>- Auto barcode interpreter. 🔎 |                      |
+
 
 
 
