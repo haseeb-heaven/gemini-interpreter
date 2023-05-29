@@ -131,10 +131,9 @@ def auto_bard_execute(prompt, code_file='code.txt', code_choices='code_choice', 
                 safe_code = safe_codes[0]
                 code_command = safe_codes[1]
                 code_snippet = safe_codes[2]
-                st.error(
-                    f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
-                st.session_state.bard_coder.add_log(
-                    f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'", logging.ERROR)
+                st.error(f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
+                if st.session_state.bard_coder:
+                  st.session_state.bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'", logging.ERROR)
             st.stop()
             return None, None, False
 
@@ -286,16 +285,18 @@ def tokenize_source_code(source_code):
                     token_str = re.sub(r'\'|\"', '', token.string)
                     tokens.append(token_str)
     except tokenize.TokenError:
-        st.session_state.bard_coder.add_log("Error parsing the tokens")
+        if st.session_state.bard_coder:
+          st.session_state.bard_coder.add_log("Error parsing the tokens")
     if tokens:
         tokens = list(([token.lower() for token in tokens]))
-    st.session_state.bard_coder.add_log(
-        f"Tokenise was called and Tokens length is {tokens.__len__()}")
+    if st.session_state.bard_coder:
+      st.session_state.bard_coder.add_log(f"Tokenise was called and Tokens length is {tokens.__len__()}")
     return tokens
 
 
 def is_code_safe(code):
-    st.session_state.bard_coder.add_log("Checking code for safety")
+    if st.session_state.bard_coder:
+      st.session_state.bard_coder.add_log("Checking code for safety")
 
     # Combine both lists
     harmful_code_commands = harmful_commands_python + harmful_commands_cpp
@@ -314,7 +315,8 @@ def is_code_safe(code):
 
     if output_dict is None or output_dict.__len__() == 0:
         output_dict = [(True, None, None)]
-    st.session_state.bard_coder.add_log(f"Output dict is {output_dict}")
+    if st.session_state.bard_coder:
+      st.session_state.bard_coder.add_log(f"Output dict is {output_dict}")
     return output_dict
 
 
@@ -406,8 +408,7 @@ if __name__ == "__main__":
         # check if prompt is changed.
         if prompt != st.session_state.text_area:
             if st.session_state.bard_coder:
-                st.session_state.bard_coder.add_log(
-                    f"Prompt changed from '{st.session_state.text_area}' to '{prompt}'")
+              st.session_state.bard_coder.add_log(f"Prompt changed from '{st.session_state.text_area}' to '{prompt}'")
             st.session_state.text_area = prompt
 
         character_count: int = len(st.session_state.text_area)
@@ -416,8 +417,8 @@ if __name__ == "__main__":
         status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
 
         if st.session_state.file_size > 0:
-            st.session_state.bard_coder.add_log(
-                f"File Char count is {st.session_state.file_char_count}")
+            if st.session_state.bard_coder:
+              st.session_state.bard_coder.add_log(f"File Char count is {st.session_state.file_char_count}")
             character_count += st.session_state.file_char_count
             # Update the character count for file size.
             status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
@@ -503,8 +504,7 @@ if __name__ == "__main__":
                 st.error(
                     "Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
                 if st.session_state.bard_coder:
-                    st.session_state.bard_coder.add_log(
-                        "Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
+                  st.session_state.bard_coder.add_log("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
                 st.stop()
 
             # Clear the previous cache.
@@ -532,21 +532,20 @@ if __name__ == "__main__":
             if prompt_safe:
                 # Run the auto bard setup process.
                 log_container = st.empty()
-                st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, expected_output, exec_type,
-                                                                                   rate_limiter_delay)
+                st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, 
+                                                                                   expected_output, exec_type,rate_limiter_delay)
             else:
-                st.error(
-                    f"Cannot execute the prompt because of illegal command found '{command}'")
-                st.session_state.bard_coder.add_log(
-                    f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'", logging.ERROR)
+                st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
+                if st.session_state.bard_coder:
+                  st.session_state.bard_coder.add_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'", logging.ERROR)
                 st.stop()
 
             # Check if output is Graph,Chart request.
             if 'graph' in prompt.lower() or 'chart' in prompt.lower():
                 image_file_graph = find_image_files(saved_file)
                 if image_file_graph:
-                    st.session_state.bard_coder.add_log(
-                        f"Graph image file is {image_file_graph} and code file is {saved_file}")
+                    if st.session_state.bard_coder:
+                      st.session_state.bard_coder.add_log(f"Graph image file is {image_file_graph} and code file is {saved_file}")
                     image = Image.open(image_file_graph)
                     st.image(image, caption='Graph Output')
 
