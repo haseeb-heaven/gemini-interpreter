@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 - **Updated** with totaly new _UI_ and _UX_. 🎨
 - Updated security for code checking and prompt checking. 🔒
 - Added new Help section. 🆘
+- Fix API Key bugs. 🛠
 
 ## [1.2] - 2023-05-28
 ### Added

@@ -122,7 +122,7 @@ And you will get output like this.
 This application uses the Bard API to interact with bard and refine the results for coding purposes. All data that is generated is stored in the following directories:
 - `response`: This directory contains all the responses from bard.
 - `codes`: This directory contains all the code generated from bard.
-- `upload_data`: This directory contains all the data that is uploaded to bard.
+- `uploads`: This directory contains all the data that is uploaded to bard.
 
 ## Features
 Some of the features of AutoBard-Coder include:
@@ -153,10 +153,10 @@ All notable changes to this project will be documented in this file.
 
 | Version | Date       | Added                                              | Fixed                |
 | ------- | ---------- | -------------------------------------------------- | -------------------- |
-| 1.3     | 2023-05-29 | - **Updated** with totally new _UI_ and _UX_. 🎨<br>- Updated security for code checking and prompt checking. 🔒<br>- Added new Help section. 🆘 |                      |
+| 1.3     | 2023-05-29 | - **Updated** with totally new _UI_ and _UX_. 🎨<br>- Updated security for code checking and prompt checking. 🔒<br>- Added new Help section. 🆘 | - Fixed API Key issues. |
 | 1.2     | 2023-05-28 | - Advanced security for code and prompt checking. 🔒<br>- Support for graphs, charts, and tables. 📊<br>- More libraries for data science. 🧬 |                      |
-| 1.1     | 2023-05-22 | - Upload files option. 📤<br>- API key settings. 🔑  | - Error handling from server. 🛠 |
-| 1.0     | 2023-05-21 | - Auto barcode generator. 🏷<br>- Auto barcode interpreter. 🔎 |                      |
+| 1.1     | 2023-05-27 | - Upload files option. 📤<br>- API key settings. 🔑  | - Error handling from server. 🛠 |
+| 1.0     | 2023-05-26 | - Auto barcode generator. 🏷<br>- Auto barcode interpreter. 🔎 |                      |
 
 
 

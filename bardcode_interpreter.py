@@ -269,8 +269,8 @@ def is_prompt_safe(prompt):
     # Check if any harmful command is in the list of words
     for command in harmful_prompts:
         if command in prompt_list:
-            st.session_state.bard_coder.add_log(
-                f"Prompt is not safe because of illegal command found '{command}'")
+            if st.session_state.bard_coder:
+                st.session_state.bard_coder.add_log(f"Prompt is not safe because of illegal command found '{command}'")
             return False, command
     if st.session_state.bard_coder:
         st.session_state.bard_coder.add_log(f"Input Prompt is safe")
