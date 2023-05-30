@@ -61,11 +61,9 @@ def auto_bard_execute(prompt, code_file='code.txt', code_choices='code_choice', 
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
 
         # Setting the prompt.
-        prompt_status, error_reason = st.session_state.bard_coder.set_prompt(
-            prompt)
+        prompt_status, error_reason = st.session_state.bard_coder.set_prompt(prompt)
         if not prompt_status:
-            st.error(
-                f"Error no data was recieved from Server, Reason {error_reason}")
+            st.error(f"Error no data was recieved from Server, Reason {error_reason}")
             st.stop()
 
         # Get the code from the response.
@@ -432,25 +430,10 @@ if __name__ == "__main__":
         # check the Prompt for safety and file size exceeding 4,000 characters.
         prompt_safe, command = is_prompt_safe(prompt)
         if not prompt_safe:
-            st.error(
-                f"Error in prompt because of illegal command found '{command}'")
+            st.error(f"Error in prompt because of illegal command found '{command}'")
 
         if character_count > BARD_FILE_SIZE_LIMIT or st.session_state.file_char_count > BARD_FILE_SIZE_LIMIT:
-            st.error(
-                f"Error in prompt The file size limit exceeded {BARD_FILE_SIZE_LIMIT} characters")
-
-        # Setting options for the application
-        with st.expander("Options"):
-            code_file = st.text_input(
-                "Filename for the generated code (without extension):", value="generated_code")
-            code_choices = st.text_input(
-                "Filename for code choices:", value="code_choices")
-            expected_output = st.text_input(
-                "Expected output (leave blank if none):")
-            exec_type = st.selectbox(
-                "Execution type:", ["single", "multiple"], index=0)
-            rate_limiter_delay = st.number_input(
-                "Rate limiter delay (in seconds):", value=5)
+            st.error(f"Error in prompt The file size limit exceeded {BARD_FILE_SIZE_LIMIT} characters")
 
             # Adding the upload file option
             uploaded_file = st.file_uploader("Choose a file")
@@ -495,10 +478,47 @@ if __name__ == "__main__":
                     st.session_state.api_key_initialized = False
                     st.error("Error initializing Bard Coder")
                   
-
+            # Setting options for the application
+        with st.expander("Options"):
+            code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
+            code_choices = st.text_input("Filename for code choices:", value="code_choices")
+            expected_output = st.text_input("Expected output (leave blank if none):")
+            exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
+            rate_limiter_delay = st.number_input("Rate limiter delay (in seconds):", value=5)
+            
+        with st.expander("Advanced"):
+            try:
+                # button to show logs.
+                show_logs = st.button("Show Logs", key="show-logs-button", use_container_width=True)
+                if show_logs:
+                    if st.session_state.bard_coder:
+                        logs_data = st.session_state.bard_coder.read_file("bardcoder.log")
+                        st.code(logs_data, language="python")
+            except Exception as e:
+                st.error(f"Error in showing logs {e}")
+                    
+            # button to show content.
+            try:
+                show_content_button = st.button("Show Content", key="show-content-button", use_container_width=True)
+                if show_content_button:
+                    if st.session_state.bard_coder:
+                        content_data = st.session_state.bard_coder.read_file("response/response.md")
+                        st.code(content_data, language="python")
+            except Exception as e:
+                st.error(f"Error in showing content {e}")
+            
+            # button to show response.
+            try:
+                show_response_button = st.button("Show Response", key="show-response-button", use_container_width=True)
+                if show_response_button:
+                    if st.session_state.bard_coder:
+                        response_data = st.session_state.bard_coder.read_file("response/response.json")
+                        st.code(response_data, language="json")
+            except Exception as e:
+                st.error(f"Error in showing response {e}")
+                        
         # Setting the buttons for the application
-        run_button, share_button, help_button = dsiplay_buttons(
-            prompt_safe and st.session_state.file_char_count < BARD_FILE_SIZE_LIMIT)
+        run_button, share_button, help_button = dsiplay_buttons(prompt_safe and st.session_state.file_char_count < BARD_FILE_SIZE_LIMIT)
 
         # Seting application to run
         if run_button:

@@ -25,15 +25,17 @@ class BardCoder:
     global bard
     global logger
     logs_enabled = False
+    logs_file = "bardcoder.log"
     response_id, conversation_id, content, factuality_queries, text_query, code_choices, code_extension = None, None, None, None, None, None, None
-    
-    def __init__(self, timeout=10, enable_logs=False):
-            # call another constructor
-            self.__init__(None, timeout, enable_logs)
     
     # Initial setup
     def __init__(self,api_key=None,timeout=10,enable_logs=False):
-        try: 
+        try:
+            # Dont initialize if api key is None.
+            if api_key is None:
+                self.write_file(self.logs_file,"BardCoder Init: API key is missing...Skipping init.\n")
+                return None
+            
             # Setting up the api key.
             if api_key:
                 self.set_api_key(api_key)
@@ -46,7 +48,7 @@ class BardCoder:
                 self.enable_logs()
                 
             # Setups the logging.
-            self.logger = self.setup_logger("bardcoder.log")
+            self.logger = self.setup_logger(self.logs_file)
             self.add_log("BardCoder: Init Starting ...")
             
         except Exception as e:
@@ -402,12 +404,16 @@ class BardCoder:
     def read_file(self, filename):
         with open(filename, 'r') as f:
             return f.read()
+        
+    def write_file(self, filename:str, data,append:bool=False):
+        with open(filename, 'w' if not append else 'a') as f:
+            f.write(data)
 
     def add_log(self, log, level=logging.INFO):
         if self.logs_enabled:
             self.logger.log(level, log)
         else:
-            self.logger = self.setup_logger('bardcoder.log')
+            self.logger = self.setup_logger(self.logs_file)
             self.logger.log(level, log)
 
     def enable_logs(self):
