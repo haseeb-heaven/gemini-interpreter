@@ -4,7 +4,7 @@
 
 [![Plugin](https://img.shields.io/badge/Auto%20Bard-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
 [![Plugin](https://img.shields.io/badge/Auto%20Bard-Replit-blue)](https://autobard-coder.haseebmir.repl.co)
-[![Plugin](https://img.shields.io/badge/Code%20Interpreter-Hosted-blue)](https://haseeb-heaven-autobard-coder-bardcode-interpreter-5g2n5e.streamlit.app/)
+[![Plugin](https://img.shields.io/badge/Code%20Interpreter-HuggingFace-blue)](https://huggingface.co/spaces/haseeb-heaven/AutoBard-Coder)
 [![Plugin](https://img.shields.io/badge/Code%20Interpreter-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/)</br>
 
 ## General Information
