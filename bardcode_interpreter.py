@@ -388,7 +388,6 @@ def init_session_state():
 if __name__ == "__main__":
     try:
         BardCoder.write_log("Starting the streamlit App")
-        subprocess.call(['bash', 'bash_src/clear_cache.sh'])
                     
         # Load the CSS file named style.css
         load_css("styles/style.css")
@@ -543,6 +542,7 @@ if __name__ == "__main__":
 
             # Clear the previous cache.
             st.info("Running the code interpreter...")
+            subprocess.call(['bash', 'bash_src/clear_cache.sh'])
 
             # Append the uploaded file data to prompt
             if upload_data:
