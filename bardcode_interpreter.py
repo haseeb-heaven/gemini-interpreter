@@ -463,6 +463,14 @@ if __name__ == "__main__":
                 # Display a success message
                 st.success("File uploaded successfully.")
 
+        # Setting options for the application
+        with st.expander("Options"):
+            code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
+            code_choices = st.text_input("Filename for code choices:", value="code_choices")
+            expected_output = st.text_input("Expected output (leave blank if none):")
+            exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
+            timeout_delay = st.number_input("Timeout (in seconds):", value=10)
+            
         with st.expander("Settings"):
             bard_key_help_text = """
       How to obtain Google Bard API key.
@@ -477,7 +485,7 @@ if __name__ == "__main__":
                 # how to call write_file static method from BardCoder class
                 BardCoder.write_log("Starting init API Key")
                 
-                st.session_state.bard_coder = init_bard_coder_session(bard_api_key)
+                st.session_state.bard_coder = init_bard_coder_session(bard_api_key,timeout_delay)
                 if BardCoder.bard_init:
                     st.session_state.api_key_initialized = True
                     BardCoder.write_log("Bard Coder initialized successfully")
@@ -487,13 +495,7 @@ if __name__ == "__main__":
                     BardCoder.write_log("Error initializing Bard Coder")
                     st.error("Error initializing Bard Coder")
                   
-        # Setting options for the application
-        with st.expander("Options"):
-            code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
-            code_choices = st.text_input("Filename for code choices:", value="code_choices")
-            expected_output = st.text_input("Expected output (leave blank if none):")
-            exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
-            rate_limiter_delay = st.number_input("Rate limiter delay (in seconds):", value=5)
+
 
         # Setting advanced options for the application
         with st.expander("Advanced"):
@@ -566,7 +568,7 @@ if __name__ == "__main__":
                 # Run the auto bard setup process.
                 log_container = st.empty()
                 st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, 
-                                                                                   expected_output, exec_type,rate_limiter_delay)
+                                                                                   expected_output, exec_type,timeout_delay)
             else:
                 st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
                 BardCoder.write_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'")
