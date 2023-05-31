@@ -20,10 +20,12 @@ import time
 from os import path
 import lib.extensions_map as extensions_map
 from lib.extensions_map import get_file_extesion
+import inspect
 
 class BardCoder:
     global bard
     global logger
+    bard_init = False
     logs_enabled = False
     logs_file = "bardcoder.log"
     response_id, conversation_id, content, factuality_queries, text_query, code_choices, code_extension = None, None, None, None, None, None, None
@@ -31,31 +33,54 @@ class BardCoder:
     # Initial setup
     def __init__(self,api_key=None,timeout=10,enable_logs=False):
         try:
+            BardCoder.write_log("Starting to initialize BardCoder.")
             # Dont initialize if api key is None.
-            if api_key is None:
-                self.write_file(self.logs_file,"BardCoder Init: API key is missing...Skipping init.\n")
+            if api_key is None or api_key == "" or '.' not in api_key:
+                BardCoder.write_log("BardCoder API key is missing or is invalid Skipping init")
+                self.bard = None
+                BardCoder.bard_init = False
                 return None
             
             # Setting up the api key.
-            if api_key:
+            BardCoder.write_log("Setting up the api key")
+            if api_key and '.' in api_key:
                 self.set_api_key(api_key)
-                
+            
+            BardCoder.write_log("Setting up the prompt")
             # Setting up Bard from BardAPI.
             self.bard = Bard(timeout=timeout)  # Set timeout in seconds
+            
+            if not self.bard:
+                BardCoder.write_log("BardCoder not initialized...Skipping init.")
+                self.bard = None
+                BardCoder.bard_init = False
+                return None
 
             # Enable logs
             if enable_logs:
                 self.enable_logs()
-                
+            
+            BardCoder.write_log("Setting up the logger")
             # Setups the logging.
             self.logger = self.setup_logger(self.logs_file)
-            self.add_log("BardCoder: Init Starting ...")
+            
+            BardCoder.bard_init = True
+            BardCoder.write_log("BardCoder initialized successfully.")
             
         except Exception as e:
             self.add_log(str(e))
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
+            self.bard = None
     
+    def write_log(data:str=None):
+        if data is None:
+            raise ValueError("Data cannot be None")
+        with open("bardcoder.log",'a') as f:
+            # Get the name of the calling function
+            caller_name = inspect.stack()[1][3]            
+            f.write(f"{time.strftime('%d-%m-%Y %H:%M:%S')} {caller_name}: {data}\n")
+
     # Set the api key
     def set_api_key(self, api_key):
         if api_key:
@@ -74,55 +99,55 @@ class BardCoder:
                     json_data = json.loads(data)
                     if json_data:
                         self.content = json_data['content']
-                        self.add_log("Init: Content: " + self.content)
+                        self.add_log("Content: " + self.content)
 
                         # Saving the response to file.
-                        self.add_log("Init: Saving response to file.")
+                        self.add_log("Saving response to file.")
                         self.save_file("response/response.json",json.dumps(response, indent=4))
                         self.save_file("response/content.md", self.content)
 
                         # Getting the content from the response.
                         self.conversation_id = json_data['conversation_id']
                         if self.conversation_id:
-                            self.add_log(f"Init: Conversation ID: {self.conversation_id}")
+                            self.add_log(f"Conversation ID: {self.conversation_id}")
 
                         # Getting the conversation ID from the response.
                         self.response_id = json_data['response_id']
                         if self.response_id:
-                            self.add_log(f"Init: Response ID: {self.response_id}")
+                            self.add_log(f"Response ID: {self.response_id}")
 
                         # Get the factuality queries from the response.
                         self.factuality_queries = json_data['factualityQueries']
                         if self.factuality_queries:
                             for factualityQuery in self.factuality_queries:
-                                self.add_log(f"Init: Factuality Query: {factualityQuery}")
+                                self.add_log(f"Factuality Query: {factualityQuery}")
                             # Get the links from the response.
                             links = self.get_links()
-                            self.add_log(f"Init: Links: {links}")
+                            self.add_log(f"Links: {links}")
 
                         # Get the text query from the response.
                         self.text_query = json_data['textQuery']
                         if self.text_query:
-                            self.add_log(f"Init: Text Query: {self.text_query}")
+                            self.add_log(f"Text Query: {self.text_query}")
 
                         # Getting the code choices from the response.
                         self.code_choices = json_data['choices']
-                        self.add_log(f"Init: Code Choices: {self.code_choices}")
+                        self.add_log(f"Code Choices: {self.code_choices}")
                         if self.code_choices:
                             for code_choice in self.code_choices:
-                                self.add_log(f"Init: Code Choice: {code_choice}")
+                                self.add_log(f"Code Choice: {code_choice}")
 
                         # Mark end of init. - Success
-                        self.add_log("Init: Success.")
+                        self.add_log("Success.")
                         return True,"Success."
                     else:
-                        self.add_log("Init: Json data is empty.")
+                        self.add_log("Json data is empty.")
                         return False,"Json data is empty."
                 else:
-                    self.add_log("Init: Data is empty.")
+                    self.add_log("Data is empty.")
                     return False,"Data is empty."
             else:
-                self.add_log("Init: Response is empty.\nCheck if the API key is valid.")
+                self.add_log("Response is empty.\nCheck if the API key is valid.")
                 return False,"Response is empty.\nCheck if the API key is valid."
 
         except Exception as e:
@@ -134,13 +159,13 @@ class BardCoder:
     # get the response from bard
     def get_response(self, prompt: str):
         if not prompt:
-            self.add_log("get_response: Prompt is empty.")
+            self.add_log("Prompt is empty.")
             return ""
         if self.bard:
-            self.add_log("get_response: Getting response from bard.")
+            self.add_log("Getting response from bard.")
             response = self.bard.get_answer(prompt)
         else:
-            self.add_log("get_response: Bard is not initialized.")
+            self.add_log("Bard is not initialized.")
             return None
 
         # get response from bard
@@ -171,8 +196,7 @@ class BardCoder:
 
         # Set up a file handler to write logs to a file
         file_handler = logging.FileHandler(filename)
-        formatter = logging.Formatter(
-            '%(asctime)s - %(message)s', datefmt='%d-%m-%y %H:%M:%S')
+        formatter = logging.Formatter('%(asctime)s - %(message)s', datefmt='%d-%m-%y %H:%M:%S')
         file_handler.setFormatter(formatter)
         logging.root.addHandler(file_handler)
         logging.root.setLevel(level)
@@ -183,7 +207,7 @@ class BardCoder:
     def get_code(self):
         try:
             if self.content:
-                self.add_log("get_code: Getting code from content.")
+                self.add_log("Getting code from content.")
                 
                 data = self.content
                 start_index = data.find("```")
@@ -198,7 +222,7 @@ class BardCoder:
                 
                 # Remove the code language identifier
                 result = result[result.find('\n') + 1:]
-                self.add_log(f"get_code: Code: {result}")
+                self.add_log(f"Code: {result}")
                 return result
         except Exception as e:
             self.add_log(str(e))
@@ -210,7 +234,7 @@ class BardCoder:
         self.code_extenstion = '.' + self.get_code_extension()
         if code:
             code = code.replace("\\n", "\n").replace("\\t", "\t")
-            self.add_log(f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
+            self.add_log(f"Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
             # Add extension to filename
             extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
@@ -218,19 +242,18 @@ class BardCoder:
 
             with open(filename, 'w') as f:
                 f.write(code)
-                self.add_log(f"save_code {filename} saved.")
+                self.add_log(f"{filename} saved.")
             return filename
 
     def save_code(self, filename="code.txt", code='self.add_log("Hello World")'):
-        self.add_log(f"save_code: Saving code with filename: {filename}")
+        self.add_log(f"Saving code with filename: {filename}")
         extension = self.get_code_extension()
         if extension:
             self.code_extenstion = '.' + extension
             #code = self.get_code()
             if code:
                 code = code.replace("\\n", "\n").replace("\\t", "\t")
-                self.add_log(
-                    f"save_code: Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
+                self.add_log(f"Saving code with filename: {filename} and extension: {self.code_extenstion} and code: {code}")
 
                 # Add extension to filename
                 extension = extensions_map.get_file_extesion(self.code_extenstion) or self.code_extenstion
@@ -238,12 +261,12 @@ class BardCoder:
 
                 with open(filename, 'w') as f:
                     f.write(code)
-                    self.add_log(f"save_code {filename} saved.")
+                    self.add_log(f"{filename} saved.")
                 return filename
 
     # save multiple codes from bard response
     def save_code_choices(self, filename):
-        self.add_log(f"save_code_choices: Saving code choices with filename: {filename}")
+        self.add_log(f"Saving code choices with filename: {filename}")
         extension = self.get_code_extension()
         if extension:
             self.code_extension = '.' + extension
@@ -251,7 +274,7 @@ class BardCoder:
 
             for index, choice in enumerate(self.code_choices):
                 choice_content = self.get_code_choice(index)
-                self.add_log(f"save_code_choices: Enumurated Choice content: {choice}")
+                self.add_log(f"Enumurated Choice content: {choice}")
                 self.save_file("codes/"+filename+'_'+str(index+1) +
                                self.code_extension, choice_content)
                 
@@ -259,9 +282,9 @@ class BardCoder:
     # a support for online compilers will be added soon.
     def execute_code(self, filename):
         if filename:
-            self.add_log(f"execute_code: Running {filename}")
+            self.add_log(f"Running {filename}")
             output = self.run_code_exec(filename)
-            self.add_log(f"execute_code: Output: {output}")
+            self.add_log(f"Output: {output}")
             return output
         return None
     
@@ -280,19 +303,19 @@ class BardCoder:
         }
 
         _, extension = os.path.splitext(filename)
-        self.add_log(f"run_code_exec: Extension: {extension}")
+        self.add_log(f"Extension: {extension}")
         if extension not in compiler_map:
-            self.add_log(f"run_code_exec: Extension {extension} not supported.")
+            self.add_log(f"Extension {extension} not supported.")
             return
 
         compiler, language = compiler_map[extension]
-        self.add_log(f"run_code_exec: Compiler: {compiler}")
+        self.add_log(f"Compiler: {compiler}")
 
         if language == "c++" and cpp_version.startswith("c++"):
             version = cpp_version[3:]
             if version in ["17", "14", "11", "0x"]:
                 cpp_version = f"c++{version}"
-                self.add_log(f"run_code_exec: C++ Version: {cpp_version}")
+                self.add_log(f":C++ Version: {cpp_version}")
 
         if debug:
             if language == "c++":
@@ -317,10 +340,10 @@ class BardCoder:
             else:
                 self.add_log("Error: Unsupported file type")
                 return
-            self.add_log(f"run_code_exec: Output: {output}")
+            self.add_log(f"Output: {output}")
         except subprocess.CalledProcessError as e:
             output += e.output.decode('utf-8')
-            self.add_log(f"run_code_exec: Error: {output}")
+            self.add_log(f"Error: {output}")
 
         if debug:
             self.add_log(f"Running {filename[:-len(extension)]}...")
@@ -342,22 +365,22 @@ class BardCoder:
                 output += '\n' + e.output.decode('utf-8')
             else:
                 output += '\n' + str(e)
-            self.add_log(f"run_code_exec: Error: {output}")
+            self.add_log(f"Error: {output}")
         
 
         if debug:
             self.add_log(f"Finished running {filename[:-len(extension)]}")
 
-        self.add_log(f"run_code_exec: Output: {output}")
+        self.add_log(f"Output: {output}")
         return output
 
     # execute all the code choices from bard response using locally installed compilers.
     def execute_code_choices(self):
-        self.add_log("execute_code_choices: Running codes")
+        self.add_log("Running codes")
         codes_choices_output = list()
         for filename in os.listdir('codes'):
             filepath = path.join('codes', filename)
-            self.add_log(f"execute_code_choices: Running {filepath}")
+            self.add_log(f"Running {filepath}")
             output = self.execute_code(filepath)
             if output:
                 codes_choices_output.append(output)
@@ -370,7 +393,7 @@ class BardCoder:
             code_content = self.content
             if code_content and not code_content in "can't help":
                 self.code_extension = code_content.split('```')[1].split('\n')[0]
-                self.add_log(f"get_code_extension: Code extension: {self.code_extension}")
+                self.add_log(f"Code extension: {self.code_extension}")
                 return self.code_extension
         except Exception as e:
             stack_trace = traceback.format_exc()
@@ -381,9 +404,9 @@ class BardCoder:
     def get_links(self):
         data = self.factuality_queries
         links = []
-        self.add_log("get_links: Data: " + str(data))
+        self.add_log("Data: " + str(data))
         if data is None or len(data) == 0:
-            self.add_log("get_links: Data is None.")
+            self.add_log("Data is None.")
             return links
         try:
             for inner_list in data[0]:
@@ -394,7 +417,7 @@ class BardCoder:
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
             return links
-        self.add_log("get_links: Links: " + str(links))
+        self.add_log("Links: " + str(links))
         return links
 
     def save_file(self, filename, data):
@@ -404,17 +427,14 @@ class BardCoder:
     def read_file(self, filename):
         with open(filename, 'r') as f:
             return f.read()
-        
-    def write_file(self, filename:str, data,append:bool=False):
-        with open(filename, 'w' if not append else 'a') as f:
-            f.write(data)
 
     def add_log(self, log, level=logging.INFO):
+        log_msg = inspect.stack()[1][3] + ": " + log
         if self.logs_enabled:
-            self.logger.log(level, log)
+            self.logger.log(level, log_msg)
         else:
             self.logger = self.setup_logger(self.logs_file)
-            self.logger.log(level, log)
+            self.logger.log(level, log_msg)
 
     def enable_logs(self):
         self.logs_enabled = True
