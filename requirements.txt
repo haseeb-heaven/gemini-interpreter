@@ -9,6 +9,4 @@ keras
 scikit-learn
 tabulate
 librosa
-sklearn
 scipy
-tensorflow

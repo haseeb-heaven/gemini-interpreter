@@ -61,11 +61,9 @@ def auto_bard_execute(prompt, code_file='code.txt', code_choices='code_choice', 
         prompt += "\n" + "Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code."
 
         # Setting the prompt.
-        prompt_status, error_reason = st.session_state.bard_coder.set_prompt(
-            prompt)
+        prompt_status, error_reason = st.session_state.bard_coder.set_prompt(prompt)
         if not prompt_status:
-            st.error(
-                f"Error no data was recieved from Server, Reason {error_reason}")
+            st.error(f"Error no data was recieved from Server, Reason {error_reason}")
             st.stop()
 
         # Get the code from the response.
@@ -132,8 +130,7 @@ def auto_bard_execute(prompt, code_file='code.txt', code_choices='code_choice', 
                 code_command = safe_codes[1]
                 code_snippet = safe_codes[2]
                 st.error(f"Error: Cannot execute the code because of illegal command found '{code_command}' in code snippet '{code_snippet}'")
-                if st.session_state.bard_coder:
-                  st.session_state.bard_coder.add_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'", logging.ERROR)
+                BardCoder.write_log(f"Cannot run the code:\n'{code}'\nbecause of illegal command found '{code_command}' in code snippet '{code_snippet}'")
             st.stop()
             return None, None, False
 
@@ -253,26 +250,26 @@ def find_image_files(file_path):
 
 
 def is_prompt_safe(prompt):
-    if st.session_state.bard_coder:
-        st.session_state.bard_coder.add_log("Checking prompt for safety")
+    if prompt is None:
+        BardCoder.write_log("Prompt is Empty")
+        return False
+    
+    BardCoder.write_log("Checking prompt for safety")
 
     # Extra care for prompt input.
     prompt_list = [re.sub(r'[^\w\s]', '', re.sub(r'(\*\*|__)(.*?)(\*\*|__)', r'\2', re.sub(
         r'^\W+|\W+$', '', item))).strip() for item in re.split('\n| ', prompt.lower()) if item.strip() != '']
     prompt_list = [re.sub(r'\d+', '', i) for i in prompt_list]
-    if st.session_state.bard_coder:
-        st.session_state.bard_coder.add_log(f"Prompt list is {prompt_list}")
+    BardCoder.write_log(f"Prompt list is {prompt_list}")
 
     # Convert the code to lowercase and split it into a list of words
 
     # Check if any harmful command is in the list of words
     for command in harmful_prompts:
         if command in prompt_list:
-            if st.session_state.bard_coder:
-                st.session_state.bard_coder.add_log(f"Prompt is not safe because of illegal command found '{command}'")
+            BardCoder.write_log(f"Prompt is not safe because of illegal command found '{command}'")
             return False, command
-    if st.session_state.bard_coder:
-        st.session_state.bard_coder.add_log(f"Input Prompt is safe")
+    BardCoder.write_log(f"Input Prompt is safe")
     return True, None
 
 
@@ -286,17 +283,17 @@ def tokenize_source_code(source_code):
                     tokens.append(token_str)
     except tokenize.TokenError:
         if st.session_state.bard_coder:
-          st.session_state.bard_coder.add_log("Error parsing the tokens")
+          BardCoder.write_log("Error parsing the tokens")
     if tokens:
         tokens = list(([token.lower() for token in tokens]))
     if st.session_state.bard_coder:
-      st.session_state.bard_coder.add_log(f"Tokenise was called and Tokens length is {tokens.__len__()}")
+      BardCoder.write_log(f"Tokenise was called and Tokens length is {tokens.__len__()}")
     return tokens
 
 
 def is_code_safe(code):
     if st.session_state.bard_coder:
-      st.session_state.bard_coder.add_log("Checking code for safety")
+      BardCoder.write_log("Checking code for safety")
 
     # Combine both lists
     harmful_code_commands = harmful_commands_python + harmful_commands_cpp
@@ -316,7 +313,7 @@ def is_code_safe(code):
     if output_dict is None or output_dict.__len__() == 0:
         output_dict = [(True, None, None)]
     if st.session_state.bard_coder:
-      st.session_state.bard_coder.add_log(f"Output dict is {output_dict}")
+      BardCoder.write_log(f"Output dict is {output_dict}")
     return output_dict
 
 
@@ -390,6 +387,8 @@ def init_session_state():
 
 if __name__ == "__main__":
     try:
+        BardCoder.write_log("Starting the streamlit App")
+                    
         # Load the CSS file named style.css
         load_css("styles/style.css")
 
@@ -397,21 +396,22 @@ if __name__ == "__main__":
         upload_prompt_data, upload_data, uploaded_file = None, None, None
 
         # Initialize the session state variables
+        BardCoder.write_log("Initializing the session state variables")
         init_session_state()
+        BardCoder.write_log("Session state variables initialized")
 
         # Set the logo and title
         logo_file = "resources/logo.png"
         title = "Code Interpreter"
         display_logo(logo_file, title)
+        BardCoder.write_log("Logo and title set")
 
         # Use the text_area variable from the session state for input
-        prompt = st.text_area(placeholder="Enter your prompt here", label="Prompt",
-                              label_visibility="hidden", height=300, key="text_area_input")
+        prompt = st.text_area(placeholder="Enter your prompt here", label="Prompt",label_visibility="hidden", height=300, key="text_area_input")
 
         # check if prompt is changed.
         if prompt != st.session_state.text_area:
-            if st.session_state.bard_coder:
-              st.session_state.bard_coder.add_log(f"Prompt changed from '{st.session_state.text_area}' to '{prompt}'")
+            BardCoder.write_log(f"Prompt changed from '{st.session_state.text_area}' to '{prompt}'")
             st.session_state.text_area = prompt
 
         character_count: int = len(st.session_state.text_area)
@@ -420,8 +420,7 @@ if __name__ == "__main__":
         status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
 
         if st.session_state.file_size > 0:
-            if st.session_state.bard_coder:
-              st.session_state.bard_coder.add_log(f"File Char count is {st.session_state.file_char_count}")
+            BardCoder.write_log(f"File Char count is {st.session_state.file_char_count}")
             character_count += st.session_state.file_char_count
             # Update the character count for file size.
             status_info_msg = f"Characters:{character_count}/{BARD_FILE_SIZE_LIMIT}"
@@ -430,27 +429,15 @@ if __name__ == "__main__":
         st.info(status_info_msg)
 
         # check the Prompt for safety and file size exceeding 4,000 characters.
-        prompt_safe, command = is_prompt_safe(prompt)
-        if not prompt_safe:
-            st.error(
-                f"Error in prompt because of illegal command found '{command}'")
+        prompt_safe = True
+        if st.session_state.bard_coder:
+            prompt_safe, command = is_prompt_safe(prompt)
+            if not prompt_safe:
+                BardCoder.write_log(f"Error in prompt because of unsafe command found '{command}'")
+                st.error(f"Error in prompt because of illegal command found '{command}'")
 
         if character_count > BARD_FILE_SIZE_LIMIT or st.session_state.file_char_count > BARD_FILE_SIZE_LIMIT:
-            st.error(
-                f"Error in prompt The file size limit exceeded {BARD_FILE_SIZE_LIMIT} characters")
-
-        # Setting options for the application
-        with st.expander("Options"):
-            code_file = st.text_input(
-                "Filename for the generated code (without extension):", value="generated_code")
-            code_choices = st.text_input(
-                "Filename for code choices:", value="code_choices")
-            expected_output = st.text_input(
-                "Expected output (leave blank if none):")
-            exec_type = st.selectbox(
-                "Execution type:", ["single", "multiple"], index=0)
-            rate_limiter_delay = st.number_input(
-                "Rate limiter delay (in seconds):", value=5)
+            st.error(f"Error in prompt The file size limit exceeded {BARD_FILE_SIZE_LIMIT} characters")
 
             # Adding the upload file option
             uploaded_file = st.file_uploader("Choose a file")
@@ -476,6 +463,14 @@ if __name__ == "__main__":
                 # Display a success message
                 st.success("File uploaded successfully.")
 
+        # Setting options for the application
+        with st.expander("Options"):
+            code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
+            code_choices = st.text_input("Filename for code choices:", value="code_choices")
+            expected_output = st.text_input("Expected output (leave blank if none):")
+            exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
+            timeout_delay = st.number_input("Timeout (in seconds):", value=10)
+            
         with st.expander("Settings"):
             bard_key_help_text = """
       How to obtain Google Bard API key.
@@ -487,29 +482,64 @@ if __name__ == "__main__":
             bard_api_key = st.text_input(label="API Key", label_visibility="hidden", type="password", placeholder="Enter your bard API key.")
             
             if bard_api_key and not st.session_state.api_key_initialized:
-                st.session_state.bard_coder = init_bard_coder_session(bard_api_key)
-                if st.session_state.bard_coder:
+                # how to call write_file static method from BardCoder class
+                BardCoder.write_log("Starting init API Key")
+                
+                st.session_state.bard_coder = init_bard_coder_session(bard_api_key,timeout_delay)
+                if BardCoder.bard_init:
                     st.session_state.api_key_initialized = True
+                    BardCoder.write_log("Bard Coder initialized successfully")
                     st.info("Bard Coder initialized successfully")
                 else:
                     st.session_state.api_key_initialized = False
+                    BardCoder.write_log("Error initializing Bard Coder")
                     st.error("Error initializing Bard Coder")
                   
 
-        # Setting the buttons for the application
-        run_button, share_button, help_button = dsiplay_buttons(
-            prompt_safe and st.session_state.file_char_count < BARD_FILE_SIZE_LIMIT)
 
-        # Seting application to run
+        # Setting advanced options for the application
+        with st.expander("Advanced"):
+            try:
+                # button to show logs.
+                show_logs = st.button("Show Logs", key="show-logs-button", use_container_width=True)
+                if show_logs:
+                    if st.session_state.bard_coder:
+                        logs_data = st.session_state.bard_coder.read_file(st.session_state.bard_coder.logs_file)
+                        st.code(logs_data, language="python")
+            except Exception as e:
+                st.error(f"Error in showing logs {e}")
+                    
+            # button to show content.
+            try:
+                show_content_button = st.button("Show Content", key="show-content-button", use_container_width=True)
+                if show_content_button:
+                    if st.session_state.bard_coder:
+                        content_data = st.session_state.bard_coder.read_file("response/response.md")
+                        st.code(content_data, language="python")
+            except Exception as e:
+                st.error(f"Error in showing content {e}")
+            
+            # button to show response.
+            try:
+                show_response_button = st.button("Show Response", key="show-response-button", use_container_width=True)
+                if show_response_button:
+                    if st.session_state.bard_coder:
+                        response_data = st.session_state.bard_coder.read_file("response/response.json")
+                        st.code(response_data, language="json")
+            except Exception as e:
+                st.error(f"Error in showing response {e}")
+                        
+        # Setting the buttons for the application
+        run_button, share_button, help_button = dsiplay_buttons(prompt_safe and st.session_state.file_char_count < BARD_FILE_SIZE_LIMIT)
+
+        # Setting application to run
         if run_button:
             # Code to execute when the "Run" button is clicked
 
             # Check if API Key is empty
             if bard_api_key is None or bard_api_key == "" or bard_api_key.__len__() == 0:
-                st.error(
-                    "Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
-                if st.session_state.bard_coder:
-                  st.session_state.bard_coder.add_log("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
+                st.error("Error executing code the API key is missing from settings.\nPlease go to settings and add your API key.")
+                BardCoder.write_log("Error executing code the API key is missing from settings.Please go to settings and add your API key.")
                 st.stop()
 
             # Clear the previous cache.
@@ -538,19 +568,17 @@ if __name__ == "__main__":
                 # Run the auto bard setup process.
                 log_container = st.empty()
                 st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, 
-                                                                                   expected_output, exec_type,rate_limiter_delay)
+                                                                                   expected_output, exec_type,timeout_delay)
             else:
                 st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
-                if st.session_state.bard_coder:
-                  st.session_state.bard_coder.add_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'", logging.ERROR)
+                BardCoder.write_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'")
                 st.stop()
 
             # Check if output is Graph,Chart request.
             if 'graph' in prompt.lower() or 'chart' in prompt.lower():
                 image_file_graph = find_image_files(saved_file)
                 if image_file_graph:
-                    if st.session_state.bard_coder:
-                      st.session_state.bard_coder.add_log(f"Graph image file is {image_file_graph} and code file is {saved_file}")
+                    BardCoder.write_log(f"Graph image file is {image_file_graph} and code file is {saved_file}")
                     image = Image.open(image_file_graph)
                     st.image(image, caption='Graph Output')
 
@@ -565,6 +593,7 @@ if __name__ == "__main__":
         # Adding Share button
         if share_button:
             if st.session_state.code_output is None or st.session_state.messages is None:
+                BardCoder.write_log("ShareGPT: Error Please run the code generator first")
                 st.error("Error: Please run the code generator first")
             else:
                 gpt_data = prompt
@@ -580,6 +609,7 @@ if __name__ == "__main__":
                     sharegpt_url = sharegpt_get_url(gpt_data, human_data)
                     st.info(f"ShareGPT Url: {sharegpt_url}")
                 else:
+                    BardCoder.write_log("ShareGPT: Error Please run the code generator first")
                     st.error("Error: Please run the code generator first")
 
         # Adding Help button
@@ -588,6 +618,9 @@ if __name__ == "__main__":
             if st.session_state.bard_coder:
                 content_data = st.session_state.bard_coder.read_file(content_file)
                 st.markdown(content_data, unsafe_allow_html=True)
+            else:
+                st.error("API key is missing from settings.\nPlease go to settings and add your API key.")
+                BardCoder.write_log("Help: Error API key is missing from settings.")
 
     except Exception as e:
         # show_outputf the stack trace
