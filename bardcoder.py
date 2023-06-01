@@ -149,14 +149,7 @@ if __name__ == "__main__":
                 
         # Clear the previous cache.
         subprocess.call(['bash', 'bash_src/clear_cache.sh'])
-        #prompt = input("Prompt: ")
-        prompt = """
-Follow the commands use Pyhton language.
-1. Get latest trends from Google.
-2.Generate eye catching Tweets using these trends for 5 tweets limit.
-3.Show all the 5 tweets in output.
-4.Save those to a file called "tweets_5.txt".
-        """
+        prompt = input("Prompt: ")
         # Setting filenames for single/multiple code choices and output.
         code_file = "code_generated" # Filename of code. [Remeber no extension]
         code_choices = "code_choice" # Filename of code choices.

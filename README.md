@@ -1,36 +1,33 @@
 # AutoBard-Coder
 ![cover_logo](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/logo.png?raw=true "")</br>
-- **Support this Project** <a href="https://www.buymeacoffee.com/haseebheaven"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=haseebheaven&button_colour=40DCA5&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" /></a>
-
-[![Plugin](https://img.shields.io/badge/Auto%20Bard-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
-[![Plugin](https://img.shields.io/badge/Auto%20Bard-Replit-blue)](https://autobard-coder.haseebmir.repl.co)
+### **Hosting and Spaces:**
+[![Plugin](https://img.shields.io/badge/Bard%20Coder-Repo-blue)](https://replit.com/@HaseebMir/AutoBard-Coder)
+[![Plugin](https://img.shields.io/badge/Bard%20Coder-Replit-blue)](https://autobard-coder.haseebmir.repl.co)
 [![Plugin](https://img.shields.io/badge/Code%20Interpreter-HuggingFace-blue)](https://huggingface.co/spaces/haseeb-heaven/AutoBard-Coder)
 [![Plugin](https://img.shields.io/badge/Code%20Interpreter-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/)</br>
+<a href="https://www.buymeacoffee.com/haseebheaven"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=haseebheaven&button_colour=40DCA5&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" /></a>
 
 ## General Information
-AutoBard-Coder is a code generator for bard.🙌👩‍💻👨‍💻 It uses the Bard API to interact with bard and refine the results for coding purposes. The main purpose of this is for research and educational purposes. This can generate code from prompts and fix itself unless the code is fixed. It is written in Python and has dependencies on streamlit and bard-coder.
+AutoBard-Coder is a _code generator_ and _code interpreter_ for [Google Bard](https://bard.google.com/).🙌👩‍💻👨‍💻 It uses the **Unofficial** [Bard API](https://github.com/dsdanielpark/Bard-API) by **_dsdanielpark_**  which is licensed under the MIT license. 
+to interact with Google bard and refine the results for coding purposes. 
+The main purpose of this is for **research** and **educational** purposes. As this can be very useful for **data analysis** and **Programmers**.
 
 ## Application main UI.
 ### BardCoder:
 ![bard_coder](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/bardcoder_main.png?raw=true "")</br>
 
-### Coder Interpreter:
+### Code Interpreter:
 ![code_interpreter](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_main_ui.png?raw=true "")</br>
 
 ## Setup Process
 To set up AutoBard-Coder, you will need to install the dependencies: `streamlit` and `bardapi`. </br>
 You will also need to authenticate with the Bard API by visiting https://bard.google.com/, </br>
-1.Opening the console with F12 </br>
-2.Going to **Application** → **Cookies**, and copying the value of the **__Secure-1PSID** cookie.</br>
-3.Then you can setup the key to your **local environment** by running the following command:</br>
-```export _BARD_API_KEY=<__Secure-1PSID value>``` Remember the `_` before `BARD_API_KEY` is important. </br>
-Or you can use `bardcoder_lib.py` to set the key to your **local environment** by running the following method `bard_coder.set_api_key(<__Secure-1PSID value>)` </br>
+- Opening the console with F12 </br>
+- Going to **Application** → **Cookies**, and copying the value of the **__Secure-1PSID** cookie.</br>
+- Then you can setup the key to your **local environment** by running the following command:</br>
+```export _BARD_API_KEY=<__Secure-1PSID value>``` Remember the `_` before `BARD_API_KEY` is important. </br></br>
 ![showcase_api_key](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/showcase_api_key.png?raw=true "")</br>
 
-4.Then you can run the application by running the following command:
-```python bardcoder.py``` </br>
-5.You can also run the code interpreter by running the following command:
-```python code_interpreter.py``` </br>
 
 ## Installation Guide
 Do not expose the `__Secure-1PSID value`. 
@@ -41,15 +38,13 @@ This will install streamlit, bard-coder-api, and any other dependencies listed i
 
 ## Usage
 There are 3 components of this application:
-1. BardCoder: A coding assistant from Bard which automatically generates code from bard responses and refines it for coding purposes. This can be used by developers to get the correct code from Bard when they need help because the output is refined and fixed multiple times to provide the correct code.
+1. **_BardCoder_**: A coding assistant from Bard which automatically generates code from bard responses and refines it for coding purposes. This can be used by developers to get the correct code from Bard when they need help because the output is refined and fixed multiple times to provide the correct code.
 - File: `bardcoder.py`
 
-![bardcoder_main](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/bardcoder_main.png?raw=true "")</br>
-
-2. AutoBard-Coder Interpreter: This is an interpreter for bardcoder which can be used to run the code generated from bardcoder. This can be very useful for all users who want to do data analysis and machine learning with bard. This can generate graphs and charts from bard responses and can be used to do data analysis.
+2. **_Code Interpreter_**: This is an interpreter for bardcoder which can be used to run the code generated from bardcoder. This can be very useful for all users who want to do data analysis and machine learning with bard. This can generate graphs and charts from bard responses and can be used to do data analysis.
 - File: `bardcode_interpreter.py`
 
-3. BardCoder Lib: This is a library for bardcoder which can be used to generate code from bard responses and refine it for coding purposes. You can use it to build your own application using bard.
+3. **_BardCoder Lib_**: This is a library for bardcoder which can be used to generate code from bard responses and refine it for coding purposes. You can use it to build your own application using bard.
 - File: `bardcoder_lib.py`
 
 ## Using BardCoder:
@@ -61,19 +56,21 @@ Not this assumes you have already set the `API KEY` in your local environment. I
 The code generated will be placed in folder `codes` and the response will be placed in folder `response`.
 
 ## Using Code Interpreter:
-To use Code Interpreter, you will need to run the following command:
-```python bardcode_interpreter.py```
+To use Code Interpreter, you will need to run the following command:</br>
+```streamlit run bardcode_interpreter.py```</br></br>
+If you need to Disable CORS Headers, you can run the following command:</br>
+```streamlit run bardcode_interpreter.py --server.enableCORS false --server.enableXsrfProtection false```</br></br>
 This will open the Code Interpreter UI in the Web Browser. And will be asked to enter prompts for bard.
 ![code_interpreter](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_main_ui.png?raw=true "")</br>
 
 Now this assumes you have already set the `API KEY` in your local environment. If you have not, please refer to the setup process.
-You can also setup the `API KEY` in the UI settings.
+You can also setup the `API KEY` in the UI settings.</br>
 ![code_interpreter_settings](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_settings.png?raw=true "")</br>
 
-Before prompting you should check the **Options** to change **Filenames** and **Filepaths** and other settings.
+Before prompting you should check the **Options** to change **Filenames** and **Filepaths** and other settings.</br>
 
 ### Uploading data for data analysis:
-You can set the `Upload Data` in **Options** to upload data for data analysis.
+You can set the `Upload Data` in **Options** to upload data for data analysis. (Right now this only supports Text files).
 ![upload_data_ui](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/upload_data_ui.png?raw=true "")</br>
 
 After uploading the files you can ask for the prompts from bard. And you will get the output like this.
@@ -124,21 +121,22 @@ This application uses the Bard API to interact with bard and refine the results 
 - `response`: This directory contains all the responses from bard.
 - `codes`: This directory contains all the code generated from bard.
 - `uploads`: This directory contains all the data that is uploaded to bard.
+- `lib`: This directory contains all the libraries for bardcoder.
+- `resources`: This directory contains all the resources for bardcoder.
 
 ## Features
 Some of the features of AutoBard-Coder include:
-- Automatic code generation from bard responses
-- Refinement of code for coding purposes
-- Ability to fix its own code
-- Ability to debug its own code
-- Ability to generate single or multiple responses from bard
-- Ability to save responses and run them locally
-- Ability to access local files for code interpretation
-- Data analysis and machine learning capabilities
-- Graphs and charts generation from bard responses
-- Ability to upload files for data analysis and machine learning.
-- Share code with others with powerered by ShareGPT.
-- Advanced safety measures to detect the safety of the code generated.
+- **Automatic** _code generation_ from bard responses
+- **Refinement** of code for coding purposes
+- Ability to **fix/debug** its own code
+- Ability to generate **single** or **multiple** responses from bard
+- Ability to **save** responses and run them locally
+- Ability to access _local files_ for code interpretation
+- **Data analysis** and machine learning capabilities
+- **Graphs** and **Charts** generation from bard responses
+- Ability to **upload files** for data analysis and machine learning.
+- Share code with others with powerered by **ShareGPT**.
+- Advanced **safety measures** to detect the safety of the code generated.
 
 ## Help Section.
 Now you can get help directly from the application. You can get help by clicking on the **Help** button in the UI.
