@@ -12,43 +12,43 @@ Date : 21-05-2023
 """
 
 # Import the required libraries
-import logging
-import sys
 import streamlit as st
-from os import path
 import time
 import traceback
 from lib.bardcoder_lib import BardCoder
 import subprocess
 from io import StringIO
-import re
 from lib.sharegpt_api import sharegpt_get_url
 from lib.blacklist_commands import harmful_commands_python, harmful_commands_cpp, harmful_prompts
 from PIL import Image
 import tokenize
+from stat import S_IREAD, S_IRGRP, S_IROTH
+import re
 import io
+import os
+from os import path
 
 # The input limit of Bard is 4,000 character (As per the Bard API documentation)
 # But you can give more input upto 10,000 characters. so we are gonna stick to that.
 BARD_FILE_SIZE_LIMIT = 10000
 
 # Function to measure the accuracy of the code
-
-
 def measure_accuracy(counter):
     accuracy = 1 / (counter + 1)
     accuracy_percentage = accuracy * 100
-    st.info(
-        f"Output has been fixed {counter} times with accuracy {accuracy_percentage:.0f}%")
+    st.info(f"Output has been fixed {counter} times with accuracy {accuracy_percentage:.0f}%")
 
 
 def show_content(content):
-    # Open the file and read its contents
-    with open(content, "r") as f:
-        markdown_text = f.read()
+    try:
+        # Open the file and read its contents
+        with open(content, "r") as f:
+            markdown_text = f.read()
 
-    # Display the Markdown text in the app
-    st.markdown(markdown_text)
+        # Display the Markdown text in the app
+        st.markdown(markdown_text)
+    except Exception as e:
+        BardCoder.write_log(f"Error in showing content {e}")
 
 
 # method to execute the bard coder process
@@ -139,6 +139,7 @@ def auto_bard_execute(prompt, code_file='code.txt', code_choices='code_choice', 
         stack_trace = traceback.format_exc()
         st.info(stack_trace)
         st.info(str(e))
+        BardCoder.add_log(str(e))
 
 
 # method to execute the bard coder process
@@ -229,23 +230,26 @@ def auto_bard_setup(prompt, code_file='code.txt', code_choices='code_choice', ex
 
 
 def find_image_files(file_path):
-    # Create a regular expression for image files
-    image_regex = re.compile(r"\b\w+\.(png|jpg|jpeg|gif|bmp)", re.IGNORECASE)
+    try:
+        # Create a regular expression for image files
+        image_regex = re.compile(r"\b\w+\.(png|jpg|jpeg|gif|bmp)", re.IGNORECASE)
 
-    # Open the code file
-    with open(file_path) as f:
-        # Read the lines
-        lines = f.readlines()
-        # Loop through the lines
-        for line in lines:
-            # Search for image files in the line
-            match = image_regex.search(line)
-            # If there is a match
-            if match:
-                # Get the image file name
-                image_file = match.group()
-                # Print the image file name
-                return image_file
+        # Open the code file
+        with open(file_path) as f:
+            # Read the lines
+            lines = f.readlines()
+            # Loop through the lines
+            for line in lines:
+                # Search for image files in the line
+                match = image_regex.search(line)
+                # If there is a match
+                if match:
+                    # Get the image file name
+                    image_file = match.group()
+                    # Print the image file name
+                    return image_file
+    except Exception as e:
+        BardCoder.write_log(f"Error in finding image files {e}")
     return None
 
 
@@ -318,11 +322,14 @@ def is_code_safe(code):
 
 
 def load_css(file_name):
-    # Open the file and read the content
-    with open(file_name) as fp:
-        css = fp.read()
-    # Use st.components.v1.html to load the CSS file
-    st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+    try:
+        # Open the file and read the content
+        with open(file_name) as fp:
+            css = fp.read()
+        # Use st.components.v1.html to load the CSS file
+        st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
+    except Exception as e:
+        BardCoder.write_log(f"Error in loading css {e}")              
 
 
 def display_logo(logo_file: str, title: str):
@@ -384,11 +391,25 @@ def init_session_state():
     if "file_char_count" not in st.session_state:
         st.session_state.file_char_count = 0
 
+def make_code_interpreter_read_only(files=[],folders:str="lib"):
+    for filename in files:
+        BardCoder.write_log(f"Making {filename} read-only")
+        os.chmod(filename, S_IREAD|S_IRGRP|S_IROTH)
+
+    # Make all files in lib folder read-only
+    folder = folders
+    for filename in os.listdir(folder):
+        filepath = os.path.join(folder, filename)
+        os.chmod(filepath, S_IREAD|S_IRGRP|S_IROTH)
 
 if __name__ == "__main__":
     try:
         BardCoder.write_log("Starting the streamlit App")
-                    
+        # Make the code interpreter read-only
+        file = __file__
+        filenames = [file,file.replace("bardcode_interpreter", "bardcoder")]
+        make_code_interpreter_read_only(filenames,"lib")
+        
         # Load the CSS file named style.css
         load_css("styles/style.css")
 
@@ -439,38 +460,42 @@ if __name__ == "__main__":
         if character_count > BARD_FILE_SIZE_LIMIT or st.session_state.file_char_count > BARD_FILE_SIZE_LIMIT:
             st.error(f"Error in prompt The file size limit exceeded {BARD_FILE_SIZE_LIMIT} characters")
 
-            # Adding the upload file option
-            uploaded_file = st.file_uploader("Choose a file")
-            if uploaded_file is not None:
-
-                # To read file as bytes:
-                bytes_data = uploaded_file.getvalue()
-                # get the file size
-                st.session_state.file_size = uploaded_file.size
-
-                # To convert to a string based IO:
-                stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
-                # To read file as string:
-                upload_data = stringio.read()
-
-                # Count the number of characters in the file
-                st.session_state.file_char_count = len(upload_data)
-
-                # write the file to uploads directory
-                with open("uploads/" + uploaded_file.name, "w") as f:
-                    f.write(upload_data)
-
-                # Display a success message
-                st.success("File uploaded successfully.")
-
         # Setting options for the application
         with st.expander("Options"):
-            code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
-            code_choices = st.text_input("Filename for code choices:", value="code_choices")
-            expected_output = st.text_input("Expected output (leave blank if none):")
-            exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
-            timeout_delay = st.number_input("Timeout (in seconds):", value=10)
-            
+            try:
+                code_file = st.text_input("Filename for the generated code (without extension):", value="generated_code")
+                code_choices = st.text_input("Filename for code choices:", value="code_choices")
+                expected_output = st.text_input("Expected output (leave blank if none):")
+                exec_type = st.selectbox("Execution type:", ["single", "multiple"], index=0)
+                timeout_delay = st.number_input("Timeout (in seconds):", value=10)
+                
+                # Adding the upload file option
+                uploaded_file = st.file_uploader("Choose a file")
+                if uploaded_file is not None:
+
+                    # To read file as bytes:
+                    bytes_data = uploaded_file.getvalue()
+                    # get the file size
+                    st.session_state.file_size = uploaded_file.size
+
+                    # To convert to a string based IO:
+                    stringio = StringIO(uploaded_file.getvalue().decode("utf-8"))
+                    # To read file as string:
+                    upload_data = stringio.read()
+
+                    # Count the number of characters in the file
+                    st.session_state.file_char_count = len(upload_data)
+
+                    # write the file to uploads directory
+                    with open("uploads/" + uploaded_file.name, "w") as f:
+                        f.write(upload_data)
+
+                    # Display a success message
+                    st.success("File uploaded successfully.")
+            except Exception as e:
+                BardCoder.write_log(f"Error in options {e}")
+
+        # Adding settings for the application
         with st.expander("Settings"):
             bard_key_help_text = """
       How to obtain Google Bard API key.
@@ -495,7 +520,6 @@ if __name__ == "__main__":
                     BardCoder.write_log("Error initializing Bard Coder")
                     st.error("Error initializing Bard Coder")
                   
-
 
         # Setting advanced options for the application
         with st.expander("Advanced"):
@@ -534,7 +558,6 @@ if __name__ == "__main__":
 
         # Setting application to run
         if run_button:
-            # Code to execute when the "Run" button is clicked
 
             # Check if API Key is empty
             if bard_api_key is None or bard_api_key == "" or bard_api_key.__len__() == 0:
@@ -564,16 +587,18 @@ if __name__ == "__main__":
                 prompt += "\n" + "using Python use Pandas save the table in file called 'table.md'"
 
             # Refine the prompt for harmful commands.
-            if prompt_safe:
-                # Run the auto bard setup process.
-                log_container = st.empty()
-                st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices, 
-                                                                                   expected_output, exec_type,timeout_delay)
-            else:
-                st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
-                BardCoder.write_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'")
-                st.stop()
-
+            try:
+                if prompt_safe:
+                    # Run the auto bard setup process.
+                    log_container = st.empty()
+                    st.session_state.code_output, saved_file, status = auto_bard_setup(prompt, code_file, code_choices,expected_output, exec_type,timeout_delay)
+                else:
+                    st.error(f"Cannot execute the prompt because of illegal command found '{command}'")
+                    BardCoder.write_log(f"Cannot execute the prompt: '{prompt}' because of illegal command found '{command}'")
+                    st.stop()
+            except Exception as e:
+                BardCoder.write_log(f"Error in auto bard setup {e}")
+                
             # Check if output is Graph,Chart request.
             if 'graph' in prompt.lower() or 'chart' in prompt.lower():
                 image_file_graph = find_image_files(saved_file)
