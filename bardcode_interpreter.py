@@ -397,14 +397,27 @@ def make_code_interpreter_read_only(files=[],folders:str="lib"):
         os.chmod(filename, S_IREAD|S_IRGRP|S_IROTH)
 
     # Make all files in lib folder read-only
+    BardCoder.write_log(f"Making all files in {folders} folder read-only")
     folder = folders
     for filename in os.listdir(folder):
         filepath = os.path.join(folder, filename)
         os.chmod(filepath, S_IREAD|S_IRGRP|S_IROTH)
 
+def create_dirs_on_startup():
+    # Create the uploads directory if it does not exist
+    if not os.path.exists("uploads"):
+        os.makedirs("uploads")
+    if not os.path.exists("codes"):
+        os.makedirs("codes")
+    if not os.path.exists("response"):
+        os.makedirs("response")
+
 if __name__ == "__main__":
     try:
         BardCoder.write_log("Starting the streamlit App")
+        # Create directories on startup
+        create_dirs_on_startup()
+        
         # Make the code interpreter read-only
         file = __file__
         filenames = [file,file.replace("bardcode_interpreter", "bardcoder")]

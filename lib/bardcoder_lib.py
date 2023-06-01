@@ -78,7 +78,7 @@ class BardCoder:
             raise ValueError("Data cannot be None")
         with open("bardcoder.log",'a') as f:
             # Get the name of the calling function
-            caller_name = inspect.stack()[1][3]            
+            caller_name = inspect.stack()[1][3]
             f.write(f"{time.strftime('%d-%m-%Y %H:%M:%S')} {caller_name}: {data}\n")
 
     # Set the api key
