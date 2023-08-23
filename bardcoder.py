@@ -1,11 +1,19 @@
 from os import path
+import os
+
+from dotenv import load_dotenv
 from lib.bardcoder_lib import BardCoder, traceback
 import time
 import subprocess
 from lib.sharegpt_api import sharegpt_get_url
 
+# load the environment variables from .env file
+load_dotenv()
+
 # Initialize the bard coder
-bard_coder = BardCoder(enable_logs=True)
+api_key = os.getenv("SECURE_1PSID")  # get value of Secure-1PSID from .env file
+bard_coder = BardCoder(api_key=api_key,timeout=10,enable_logs=True)
+
 messages = ""
 
 def measure_accuracy(counter):

@@ -8,19 +8,20 @@ License : MIT
 Date : 21-05-2023
 """
 
-# import libraries
 import json
 import logging
 import os
-import json
 from bardapi import Bard
 import traceback
 import subprocess
 import time
 from os import path
+from dotenv import load_dotenv
+import requests
 import lib.extensions_map as extensions_map
 from lib.extensions_map import get_file_extesion
 import inspect
+from bardapi import SESSION_HEADERS
 
 class BardCoder:
     global bard
@@ -48,7 +49,7 @@ class BardCoder:
             
             BardCoder.write_log("Setting up the prompt")
             # Setting up Bard from BardAPI.
-            self.bard = Bard(timeout=timeout)  # Set timeout in seconds
+            self.bard = self.load_bard_with_sessions(timeout)
             
             if not self.bard:
                 BardCoder.write_log("BardCoder not initialized...Skipping init.")
@@ -72,6 +73,19 @@ class BardCoder:
             stack_trace = traceback.format_exc()
             self.add_log(stack_trace)
             self.bard = None
+    
+    def load_bard_with_sessions(self,timeout=10):
+        load_dotenv()  # load values from .env file
+
+        session = requests.Session()
+        token = os.getenv("SECURE_1PSID")  # get value of Secure-1PSID from .env file
+        session.cookies.set("__Secure-1PSID", os.getenv("SECURE_1PSID"))
+        session.cookies.set("__Secure-1PSIDCC", os.getenv("SECURE_1PSIDCC"))  # get value of Secure-1PSIDCC from .env file
+        session.cookies.set("__Secure-1PSIDTS", os.getenv("SECURE_1PSIDTS"))  # get value of Secure-1PSIDTS from .env file
+        session.headers = SESSION_HEADERS
+
+        bard = Bard(token=token, session=session,timeout=timeout)
+        return bard
     
     def write_log(data:str=None):
         if data is None:
