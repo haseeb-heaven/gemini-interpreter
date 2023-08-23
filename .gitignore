@@ -4,6 +4,7 @@
 *.json
 *.doc
 *.md
+.env
 .DS_Store
 graph.png
 *.txt
