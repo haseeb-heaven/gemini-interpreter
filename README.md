@@ -28,6 +28,17 @@ You will also need to authenticate with the Bard API by visiting https://bard.go
 ```export _BARD_API_KEY=<__Secure-1PSID value>``` Remember the `_` before `BARD_API_KEY` is important. </br></br>
 ![showcase_api_key](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/showcase_api_key.png?raw=true "")</br>
 
+## Session Keys.
+Due to technical changes from [Bard API - Sessions Issue](https://github.com/dsdanielpark/Bard-API/issues/155) you now need to have **3 Sessions keys** instead of one now this to work and create a `.env` file and copy all keys
+in that environment file like this.
+
+**.env file**</br>
+SECURE_1PSID='**XXXX**'</br>
+SECURE_1PSIDCC='**XXXX**'</br>
+SECURE_1PSIDTS='**XXXX**'</br>
+
+And then `bardcoder` will **automatically** read the keys from these files and will use them as your **session** and **maintain** it.
+
 
 ## Installation Guide
 Do not expose the `__Secure-1PSID value`. 
