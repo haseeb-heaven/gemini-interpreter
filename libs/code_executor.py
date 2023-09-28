@@ -53,10 +53,6 @@ class CodeExecutor:
 
             else:
                 output = self.run_code(code, language)
-                
-                # Check for errors in code execution
-                if "error" in output.lower() or "exception" in output.lower() or "SyntaxError" in output.lower() or "NameError" in output.lower():
-                    output = "There were Error in output code"
                 return output
 
         except Exception as e:

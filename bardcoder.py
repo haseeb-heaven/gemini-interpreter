@@ -2,8 +2,9 @@ from os import path
 import os
 import time
 import subprocess
+import traceback
 from dotenv import load_dotenv
-from libs.bardcoder_lib import BardCoder, traceback
+from libs.bardcoder_lib import BardCoder
 from libs.sharegpt_api import sharegpt_get_url
 
 bard_coder = None
@@ -20,7 +21,7 @@ def show_output(message):
     messages += message + "\n"
     print(message)
 
-def bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
+def bard_execute(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
     try:
         # Additional prompt for class clarification.
         #prompt += "\n" + "Name the class code_generated for Java language."
@@ -59,7 +60,7 @@ def bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice
             else:
                 if exec_type == 'single':
                     time.sleep(rate_limiter_delay)
-                    return code_output, saved_file, False
+                    return code_output, saved_file, True
                 else:
                     time.sleep(rate_limiter_delay)
         else:
@@ -85,13 +86,13 @@ def bard_execute_process(prompt, code_file='code.txt', code_choices='code_choice
         show_output("BardCoder: " + stack_trace)
         show_output("BardCoder: " + str(e))
 
-def bard_setup_process(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
+def bard_setup(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
     
     # Append the codes directory to filename
     code_file = path.join("codes",code_file)
     
     # Start the bard coder process
-    code_choices_output, saved_file, status = bard_execute_process(prompt, code_file, code_choices, expected_output, exec_type)
+    code_choices_output, saved_file, status = bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
     code_output = ""
     
     if status:
@@ -113,7 +114,7 @@ def bard_setup_process(prompt, code_file='code.txt', code_choices='code_choice',
                 "Note:The output should only be fixed code and nothing else. No explanation or anything else."
 
                 # Start the bard coder process again.
-                code_output, saved_file, status = bard_execute_process(prompt, code_file, code_choices, expected_output, exec_type)
+                code_output, saved_file, status = bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
                 # Sleep for 5 seconds before re-prompting. Dont get Rate limited.
                 time.sleep(rate_limiter_delay)
                 test_cases_output += 1
@@ -133,7 +134,7 @@ def bard_setup_process(prompt, code_file='code.txt', code_choices='code_choice',
                     "Note:The output should only be fixed code and nothing else. No explanation or anything else."
 
                     # start the bard coder process again.
-                    code_output, saved_file, status = bard_execute_process(prompt, code_file, code_choices, expected_output, exec_type)
+                    code_output, saved_file, status = bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
                     
                     # Sleep for 5 seconds before re-prompting. Dont get Rate limited.
                     time.sleep(rate_limiter_delay)
@@ -186,10 +187,10 @@ def bard_main() -> None:
         expected_output = None # Expected output to check in code output.
         exec_type = 'single'  # Execution type = single/multiple. [in Multiple execution type, bard coder will generate multiple code choices]
         rate_limiter_delay = 5 # Delay in seconds to avoid rate limiting.
-        share_gpt = False # Share the code on sharegpt.com
+        share_gpt = True # Share the code on sharegpt.com
         
         # Execute the bard coder process.
-        code_output = bard_setup_process(prompt, code_file, code_choices, expected_output, exec_type,rate_limiter_delay)
+        code_output = bard_setup(prompt, code_file, code_choices, expected_output, exec_type,rate_limiter_delay)
         sharegpt_url = ""
         
         # Adding Share button

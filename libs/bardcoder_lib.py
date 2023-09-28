@@ -26,38 +26,55 @@ class BardCoder:
         """
         Initialize the BardCoder class with the given parameters.
         """
-        self.model = "models/" + model
-        self.temperature = temperature
-        self.max_output_tokens = max_output_tokens
-        self.mode = mode
-        self.api_key = None
-        self.top_k = 20
-        self.top_p = 0.85
-        self.guidelines = guidelines if guidelines else []
-        self.code = None
-        self.extracted_code = None
-        self.palm_generator = None
-        self._configure_api(api_key)
-        self.code_executor = CodeExecutor('offline',self.code,"python",".py")
+        try:
+            self.model = "models/" + model
+            self.temperature = temperature
+            self.max_output_tokens = max_output_tokens
+            self.mode = mode
+            self.api_key = None
+            self.top_k = 20
+            self.top_p = 0.85
+            self.guidelines = guidelines if guidelines else []
+            self.code = None
+            self.extracted_code = None
+            self.palm_generator = None
+            self.validate_api_key(api_key)  # Validate the API key before configuring the API
+            self._configure_api(api_key)
+            self.code_executor = CodeExecutor('offline',self.code,"python",".py")
 
-        # Dynamically construct guidelines based on session state
-        self.guidelines_list = []
+            # Dynamically construct guidelines based on session state
+            self.guidelines_list = []
 
-        if "modular_code" in self.guidelines:
-            self.guidelines_list.append("- Ensure the method is modular in its approach.")
-        if "exception_handling" in self.guidelines:
-            self.guidelines_list.append("- Integrate robust exception handling.")
-        if "error_handling" in self.guidelines:
-            self.guidelines_list.append("- Add error handling to each module.")
-        if "efficient_code" in self.guidelines:
-            self.guidelines_list.append("- Optimize the code to ensure it runs efficiently.")
-        if "robust_code" in self.guidelines:
-            self.guidelines_list.append("- Ensure the code is robust against potential issues.")
-        if "naming_conventions" in self.guidelines:
-            self.guidelines_list.append("- Follow standard naming conventions.")
+            if "modular_code" in self.guidelines:
+                self.guidelines_list.append("- Ensure the method is modular in its approach.")
+            if "exception_handling" in self.guidelines:
+                self.guidelines_list.append("- Integrate robust exception handling.")
+            if "error_handling" in self.guidelines:
+                self.guidelines_list.append("- Add error handling to each module.")
+            if "efficient_code" in self.guidelines:
+                self.guidelines_list.append("- Optimize the code to ensure it runs efficiently.")
+            if "robust_code" in self.guidelines:
+                self.guidelines_list.append("- Ensure the code is robust against potential issues.")
+            if "naming_conventions" in self.guidelines:
+                self.guidelines_list.append("- Follow standard naming conventions.")
 
-        # Convert the list to a string
-        self.guidelines = "\n".join(self.guidelines_list)
+            # Convert the list to a string
+            self.guidelines = "\n".join(self.guidelines_list)
+        except:
+            raise
+
+    def validate_api_key(self, api_key):
+        """
+        Validate the API key based on the given criteria.
+        """
+        if " " in api_key:
+            raise ValueError("API key should not contain spaces.")
+        if api_key.islower():
+            raise ValueError("API key should not contain only lower case characters.")
+        if api_key.isupper():
+            raise ValueError("API key should not contain only upper case characters.")
+        if len(api_key) < 30:
+            raise ValueError("API key should be at least 30 characters long.")
 
     def _configure_api(self,api_key=None):
         """
@@ -250,16 +267,22 @@ class BardCoder:
     def execute_code(self, compiler_mode: str, code: str, language: str):
         try:
             logger.info(f"Attempting to execute code: {code[:50]} in language: {language} with Compiler Mode: {compiler_mode}")
-            execution_result = self.code_executor.execute_code(compiler_mode, code, language)
+            output = self.code_executor.execute_code(compiler_mode, code, language)
+            
+            # Check for errors in code execution
+            if "error" in output.lower() or "exception" in output.lower() or "SyntaxError" in output.lower() or "NameError" in output.lower():
+                logger.info(f"Code execution failed. Fixing code.")
+                output = self.fix_code(code,language)
+                    
             logger.info(f"Code executed successfully.")
-            return execution_result
-        except Exception as e:
+            return output
+        except Exception as exception:
             logger.error(f"Error in executing code: {traceback.format_exc()}")
-            raise Exception("Error in executing code.")
+            raise Exception(exception)
         
     def get_code_extension(self,code=None):
         try:
             return self.code_executor.get_code_extension(code=None)
         except Exception as exception:
             logger.error(f"Error in getting code extension: {traceback.format_exc()}")
-            raise Exception("Error in getting code extension.")
+            raise Exception(exception)
