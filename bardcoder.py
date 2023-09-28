@@ -21,8 +21,9 @@ def show_output(message):
     messages += message + "\n"
     print(message)
 
-def bard_execute(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
+def bard_execute(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None,save_file=False, exec_type='single',rate_limiter_delay=5):
     try:
+        saved_file = ""
         # Additional prompt for class clarification.
         #prompt += "\n" + "Name the class code_generated for Java language."
         
@@ -34,18 +35,22 @@ def bard_execute(prompt, code_file='code.txt', code_choices='code_choice', expec
         if not code:
             print(f"Error no data was recieved from Server")
             return None, None, False
+        else:
+            print(f"BardCoder: " + f"Code generated: {code[:50]}")
 
         # Save the code to file
-        print(f"Saving code {code[:100]} to file {code_file}")
-        saved_file = bard_coder.save_code(code_file)
-        if saved_file:
-            show_output("BardCoder: " + f"Code saved to file {saved_file}")
-        else:
-            show_output("BardCoder: " + "Code not saved to file")
+        if save_file:
+            print(f"Saving code {code[:50]} to file {code_file}")
+            saved_file = bard_coder.save_code(code_file)
+            if saved_file:
+                show_output("BardCoder: " + f"Code saved to file {saved_file}")
+            else:
+                show_output("BardCoder: " + "Code not saved to file")
 
         show_output("BardCoder: " + "Executing primary code")
-        code_extension = bard_coder.get_code_extension()
-        code_output = bard_coder.execute_code('offline', code,code_extension)
+        
+        # Execute the code.
+        code_output = bard_coder.execute_code(code)
         
         if code_output and code_output != None and code_output.__len__() > 0:
             if 'error:' in code_output.lower():
@@ -86,13 +91,13 @@ def bard_execute(prompt, code_file='code.txt', code_choices='code_choice', expec
         show_output("BardCoder: " + stack_trace)
         show_output("BardCoder: " + str(e))
 
-def bard_setup(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None, exec_type='single',rate_limiter_delay=5):
+def bard_setup(prompt, code_file='code.txt', code_choices='code_choice', expected_output=None,save_file=False, exec_type='single',rate_limiter_delay=5):
     
     # Append the codes directory to filename
     code_file = path.join("codes",code_file)
     
     # Start the bard coder process
-    code_choices_output, saved_file, status = bard_execute(prompt, code_file, code_choices, expected_output, exec_type)
+    code_choices_output, saved_file, status = bard_execute(prompt, code_file, code_choices, expected_output,save_file, exec_type)
     code_output = ""
     
     if status:
@@ -162,16 +167,18 @@ def bard_main() -> None:
         # Clear the previous cache.
         subprocess.call(['bash', 'bash_src/clear_cache.sh'])
         
-        prompt_file = str(input("Enter prompt file name [default: prompt.txt]: "))
+        # prompt_file = str(input("Enter prompt file name [default: prompt.txt]: "))
         
-        if not prompt_file or prompt_file.__len__() == 0:
-            prompt_file = "prompt.txt"
-            # sleep for 2 seconds.
-            time.sleep(2)
-            print(f"Reading prompt from file {prompt_file}")
+        # if not prompt_file or prompt_file.__len__() == 0:
+        #     prompt_file = "prompt.txt"
+        #     # sleep for 2 seconds.
+        #     time.sleep(2)
+        #     print(f"Reading prompt from file {prompt_file}")
         
-        # Read the prompt from file.
-        prompt = read_prompt_from_file(prompt_file)
+        # # Read the prompt from file.
+        # prompt = read_prompt_from_file(prompt_file)
+        
+        prompt = input("Enter prompt: ")
         
         print(f"Trying to generate code for input prompt: \n{prompt}")
         time.sleep(2)
@@ -184,13 +191,14 @@ def bard_main() -> None:
         # Setting filenames for single/multiple code choices and output.
         code_file = "code_generated" # Filename of code. [Remeber no extension]
         code_choices = "code_choice" # Filename of code choices.
+        save_file = False # Whether to save the code in file.
         expected_output = None # Expected output to check in code output.
         exec_type = 'single'  # Execution type = single/multiple. [in Multiple execution type, bard coder will generate multiple code choices]
         rate_limiter_delay = 5 # Delay in seconds to avoid rate limiting.
         share_gpt = True # Share the code on sharegpt.com
         
         # Execute the bard coder process.
-        code_output = bard_setup(prompt, code_file, code_choices, expected_output, exec_type,rate_limiter_delay)
+        code_output = bard_setup(prompt, code_file, code_choices, expected_output,save_file, exec_type,rate_limiter_delay)
         sharegpt_url = ""
         
         # Adding Share button

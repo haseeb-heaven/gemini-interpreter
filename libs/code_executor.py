@@ -52,11 +52,11 @@ class CodeExecutor:
                 return html_content
 
             else:
-                output = self.run_code(code, language)
-                logger.info(f"Runner Output execution: {output}")
-                return output
+                output,error = self.run_code(code, language)
+                logger.info(f"Runner Output execution: {output} and error: {error}")
+                return output,error
 
-        except Exception as e:
+        except Exception:
             logger.error(f"Error in code execution: {traceback.format_exc()}")
 
     def check_compilers(self, language):
@@ -101,108 +101,80 @@ class CodeExecutor:
             return "Compilers not found. Please install compilers on your system."
         
         if language == "python":
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=True) as file:
-                file.write(code)
-                file.flush()
-
-                logger.info(f"Input file: {file.name}")
-                output = subprocess.run(["python", file.name], capture_output=True, text=True)
-                logger.info(f"Runner Output execution: {output.stdout + output.stderr}")
-                return output.stdout + output.stderr
+            process = subprocess.Popen(["python", "-c", code], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate()
+            stdout_output = stdout.decode("utf-8")
+            stderr_output = stderr.decode("utf-8")
+            logger.info(f"Runner Output execution: {stdout_output}, Errors: {stderr_output}")
+            return stdout_output, stderr_output
 
         elif language == "c" or language == "c++":
-            ext = ".c" if language == "c" else ".cpp"
-            with tempfile.NamedTemporaryFile(mode="w", suffix=ext, delete=True) as src_file:
-                src_file.write(code)
-                src_file.flush()
-
-                logger.info(f"Input file: {src_file.name}")
-
-                with tempfile.NamedTemporaryFile(mode="w", suffix="", delete=True) as exec_file:
-                    compile_output = subprocess.run(
-                        ["gcc" if language == "c" else "g++", "-o", exec_file.name, src_file.name], capture_output=True, text=True)
-
-                    if compile_output.returncode != 0:
-                        return compile_output.stderr
-
-                    logger.info(f"Output file: {exec_file.name}")
-                    run_output = subprocess.run([exec_file.name], capture_output=True, text=True)
-                    logger.info(f"Runner Output execution: {run_output.stdout + run_output.stderr}")
-                    return run_output.stdout + run_output.stderr
+            compile_output = subprocess.run(
+                ["gcc" if language == "c" else "g++", "-x", language, "-"], input=code, capture_output=True, text=True)
+            if compile_output.returncode != 0:
+                logger.info(f"Compiler Output: {compile_output.stderr}")
+                return compile_output.stderr
+            run_output = subprocess.run([compile_output.stdout], capture_output=True, text=True)
+            logger.info(f"Runner Output: {run_output.stdout + run_output.stderr}")
+            return run_output.stdout + run_output.stderr
 
         elif language == "javascript":
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".js", delete=True) as file:
-                file.write(code)
-                file.flush()
-
-                logger.info(f"Input file: {file.name}")
-                output = subprocess.run(["node", file.name], capture_output=True, text=True)
-                logger.info(f"Runner Output execution: {output.stdout + output.stderr}")
-                return output.stdout + output.stderr
+            output = subprocess.run(["node", "-e", code], capture_output=True, text=True)
+            logger.info(f"Runner Output: {output.stdout + output.stderr}")
+            return output.stdout + output.stderr
             
         elif language == "java":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".java", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    classname = "Main"  # Assuming the class name is Main, adjust if needed
-                    compile_output = subprocess.run(["javac", file.name], capture_output=True, text=True)
-                    if compile_output.returncode != 0:
-                        return compile_output.stderr
-                    run_output = subprocess.run(["java", "-cp", tempfile.gettempdir(), classname], capture_output=True, text=True)
-                    return run_output.stdout + run_output.stderr
+            classname = "Main"  # Assuming the class name is Main, adjust if needed
+            compile_output = subprocess.run(["javac", "-"], input=code, capture_output=True, text=True)
+            if compile_output.returncode != 0:
+                logger.info(f"Compiler Output: {compile_output.stderr}")
+                return compile_output.stderr
+            run_output = subprocess.run(["java", "-cp", ".", classname], capture_output=True, text=True)
+            logger.info(f"Runner Output: {run_output.stdout + run_output.stderr}")
+            return run_output.stdout + run_output.stderr
 
         elif language == "swift":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".swift", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    output = subprocess.run(["swift", file.name], capture_output=True, text=True)
-                    return output.stdout + output.stderr
+            output = subprocess.run(["swift", "-"], input=code, capture_output=True, text=True)
+            logger.info(f"Runner Output: {output.stdout + output.stderr}")
+            return output.stdout + output.stderr
 
         elif language == "c#":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".cs", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    compile_output = subprocess.run(["csc", file.name], capture_output=True, text=True)
-                    if compile_output.returncode != 0:
-                        return compile_output.stderr
-                    exe_name = file.name.replace(".cs", ".exe")
-                    run_output = subprocess.run([exe_name], capture_output=True, text=True)
-                    return run_output.stdout + run_output.stderr
+            compile_output = subprocess.run(["csc", "-"], input=code, capture_output=True, text=True)
+            if compile_output.returncode != 0:
+                logger.info(f"Compiler Output: {compile_output.stderr}")
+                return compile_output.stderr
+            run_output = subprocess.run([compile_output.stdout], capture_output=True, text=True)
+            logger.info(f"Runner Output: {run_output.stdout + run_output.stderr}")
+            return run_output.stdout + run_output.stderr
 
         elif language == "scala":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".scala", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    output = subprocess.run(["scala", file.name], capture_output=True, text=True)
-                    return output.stdout + output.stderr
+            output = subprocess.run(["scala", "-e", code], capture_output=True, text=True)
+            logger.info(f"Runner Output: {output.stdout + output.stderr}")
+            return output.stdout + output.stderr
 
         elif language == "ruby":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".rb", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    output = subprocess.run(["ruby", file.name], capture_output=True, text=True)
-                    return output.stdout + output.stderr
+            output = subprocess.run(["ruby", "-e", code], capture_output=True, text=True)
+            logger.info(f"Runner Output: {output.stdout + output.stderr}")
+            return output.stdout + output.stderr
 
         elif language == "kotlin":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".kt", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    compile_output = subprocess.run(["kotlinc", file.name, "-include-runtime", "-d", "output.jar"], capture_output=True, text=True)
-                    if compile_output.returncode != 0:
-                        return compile_output.stderr
-                    run_output = subprocess.run(["java", "-jar", "output.jar"], capture_output=True, text=True)
-                    return run_output.stdout + run_output.stderr
+            compile_output = subprocess.run(["kotlinc", "-script", "-"], input=code, capture_output=True, text=True)
+            if compile_output.returncode != 0:
+                logger.info(f"Compiler Output: {compile_output.stderr}")
+                return compile_output.stderr
+            run_output = subprocess.run(["java", "-jar", compile_output.stdout], capture_output=True, text=True)
+            logger.info(f"Runner Output: {run_output.stdout + run_output.stderr}")
+            return run_output.stdout + run_output.stderr
 
         elif language == "go":
-                with tempfile.NamedTemporaryFile(mode="w", suffix=".go", delete=True) as file:
-                    file.write(code)
-                    file.flush()
-                    compile_output = subprocess.run(["go", "build", "-o", "output.exe", file.name], capture_output=True, text=True)
-                    if compile_output.returncode != 0:
-                        return compile_output.stderr
-                    run_output = subprocess.run(["./output.exe"], capture_output=True, text=True)
-                    return run_output.stdout + run_output.stderr
+            compile_output = subprocess.run(["go", "run", "-"], input=code, capture_output=True, text=True)
+            if compile_output.returncode != 0:
+                logger.info(f"Compiler Output: {compile_output.stderr}")
+                return compile_output.stderr
+            logger.info(f"Runner Output: {compile_output.stdout + compile_output.stderr}")
+            return compile_output.stdout + compile_output.stderr
         else:
+            logger.info("Unsupported language.")
             return "Unsupported language."
         
     # Generate Dynamic HTML for JDoodle Compiler iFrame Embedding.

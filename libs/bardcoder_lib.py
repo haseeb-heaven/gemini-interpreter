@@ -61,7 +61,8 @@ class BardCoder:
                 self.guidelines_list.append("- Document the code.")
             if "code_only" in self.guidelines:
                 self.guidelines_list.append("- Generate code only and make sure there are no comments generated or docs alongside the code")
-
+            if "script_only" in self.guidelines:
+                self.guidelines_list.append("- Generate the code like script in such a way that there should not be any method or comments defined in code just code line by line written")
             # Convert the list to a string
             self.guidelines = "\n".join(self.guidelines_list)
         except:
@@ -119,7 +120,7 @@ class BardCoder:
             logger.error(f"Error occurred while extracting code: {e}")
             return None
     
-    def generate_code(self, code_prompt,code_language):
+    def generate_code(self, code_prompt,code_language='python'):
         """
         Function to generate text using the palm API.
         """
@@ -206,7 +207,7 @@ class BardCoder:
             logger.error(f"Error in code generation: {traceback.format_exc()}")
             raise Exception(exception)
 
-    def fix_code(self, code,code_language):
+    def fix_code(self, code,code_error,code_language='python'):
         """
         Function to fix the generated code using the palm API.
         """
@@ -222,7 +223,7 @@ class BardCoder:
                 
                 # This template is used to generate the prompt for fixing the code
                 template = f"""
-                Task: Fix the following program {{code}} in the language {code_language} with the following guidelines
+                Task: Fix the following program {{code}} with the following error '{code_error}' in the language {code_language} with the following guidelines
                 Make sure the output is printed on the screen.
                 And make sure the output contains the full fixed code.
                 Add comments in that line where you fixed and what you fixed.
@@ -241,8 +242,7 @@ class BardCoder:
                 max_output_tokens=self.max_output_tokens,
                 top_k=self.top_k,
                 top_p=self.top_p,
-                stop_sequences=[],
-                safety_settings=[{"category":"HARM_CATEGORY_DEROGATORY","threshold":1},{"category":"HARM_CATEGORY_TOXICITY","threshold":1},{"category":"HARM_CATEGORY_VIOLENCE","threshold":2},{"category":"HARM_CATEGORY_SEXUAL","threshold":2},{"category":"HARM_CATEGORY_MEDICAL","threshold":2},{"category":"HARM_CATEGORY_DANGEROUS","threshold":2}],
+                stop_sequences=[]
                 )
                 
                 if self.palm_generator:
@@ -282,16 +282,14 @@ class BardCoder:
             raise ValueError("Code, language, and compiler mode must be provided.")
         try:
             logger.info(f"Attempting to execute code: {code[:50]} in language: {language} with Compiler Mode: {compiler_mode}")
-            output = self.code_executor.execute_code(code, language,compiler_mode)
+            output,error = self.code_executor.execute_code(code, language,compiler_mode)
             logger.info(f"Code executed successfully with output: {output[:100]}...")
-            
-            # Check for errors in code execution
-            if "error" in output.lower() or "exception" in output.lower() or "SyntaxError" in output.lower() or "NameError" in output.lower():
-                logger.info(f"Code execution failed. Fixing code.")
-                output = self.fix_code(code,language)
-                    
-            logger.info(f"Code executed successfully.")
-            return output
+            if output:
+                logger.info(f"Code executed successfully.")
+            elif error:
+                logger.info(f"Code executed with error: {error}...")
+                
+            return output,error
         except Exception as exception:
             logger.error(f"Error in executing code: {traceback.format_exc()}")
             raise Exception(exception)
