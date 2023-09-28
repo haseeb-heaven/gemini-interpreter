@@ -15,11 +15,11 @@ Date : 21-05-2023
 import streamlit as st
 import time
 import traceback
-from lib.bardcoder_lib import BardCoder
+from libs.bardcoder_lib import BardCoder
 import subprocess
 from io import StringIO
-from lib.sharegpt_api import sharegpt_get_url
-from lib.blacklist_commands import harmful_commands_python, harmful_commands_cpp, harmful_prompts
+from libs.sharegpt_api import sharegpt_get_url
+from libs.blacklist_commands import harmful_commands_python, harmful_commands_cpp, harmful_prompts
 from PIL import Image
 import tokenize
 from stat import S_IREAD, S_IRGRP, S_IROTH

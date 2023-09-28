@@ -1,0 +1,33 @@
+2023-09-28 04:16:45,314 [INFO] [bardcoder_lib.py:72] [_configure_api] - API key provided from settings.
+2023-09-28 04:16:45,314 [INFO] [bardcoder_lib.py:74] [_configure_api] - Palm API configured successfully.
+2023-09-28 04:16:49,883 [INFO] [bardcoder_lib.py:121] [generate_code] - Generating code with mode: precise, top_k: 40, top_p: 0.95
+2023-09-28 04:16:49,884 [INFO] [bardcoder_lib.py:129] [generate_code] - Generating code for prompt: Design a C++ Code to Write Factorial of number in using recursion..
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. in language: python
+2023-09-28 04:16:49,884 [INFO] [bardcoder_lib.py:131] [generate_code] - Generating code for prompt: Design a C++ Code to Write Factorial of number in using recursion..
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. in language: python
+2023-09-28 04:16:52,623 [INFO] [bardcoder_lib.py:154] [generate_code] - Text generation completed successfully.
+2023-09-28 04:16:52,624 [INFO] [bardcoder_lib.py:159] [generate_code] - Palm coder is initialized.
+2023-09-28 04:16:52,624 [INFO] [bardcoder_lib.py:160] [generate_code] - Generated code: ```c++
+#include <iostream>
+using namespace std;
+
+// Function to calculate factorial of a number
+int ...
+2023-09-28 04:16:52,624 [INFO] [bardcoder_lib.py:91] [_extract_code] - Code extracted successfully.
+2023-09-28 04:16:52,624 [INFO] [bardcoder_lib.py:235] [save_code] - Attempting to save code to file: codes/code_generated
+2023-09-28 04:16:52,624 [INFO] [code_executor.py:263] [save_code] - Saving code with filename: codes/code_generated
+2023-09-28 04:16:52,624 [INFO] [bardcoder_lib.py:237] [save_code] - Code saved successfully to file: None
+2023-09-28 04:16:52,625 [INFO] [bardcoder_lib.py:245] [execute_code] - Attempting to execute code: #include <iostream>
+using namespace std;
+
+// Funct in language: python with Compiler Mode: offline
+2023-09-28 04:16:52,625 [INFO] [code_executor.py:42] [execute_code] - Executing code: #include <iostream>
+using namespace std;
+
+// Funct in language: python with Compiler Mode: offline
+2023-09-28 04:16:52,625 [INFO] [code_executor.py:93] [run_code] - Running code: #include <iostream>
+using namespace std;
+
+// Function to calculate factorial of a number
+int factori in language: python
+2023-09-28 04:16:52,644 [INFO] [bardcoder_lib.py:247] [execute_code] - Code executed successfully.

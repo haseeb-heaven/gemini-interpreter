@@ -1,11 +1,158 @@
-29-05-23 17:33:06 - Init Starting ...
-29-05-23 17:33:06 - Checking prompt for safety
-29-05-23 17:33:06 - Prompt list is []
-29-05-23 17:33:06 - Input Prompt is safe
-29-05-23 17:33:07 - Checking prompt for safety
-29-05-23 17:33:07 - Prompt list is []
-29-05-23 17:33:07 - Input Prompt is safe
-29-05-23 17:34:14 - Init Starting ...
-29-05-23 17:34:14 - Checking prompt for safety
-29-05-23 17:34:14 - Prompt list is []
-29-05-23 17:34:14 - Input Prompt is safe
+2023-09-28 05:03:31,017 [INFO] [bardcoder_lib.py:73] [_configure_api] - API key provided from settings.
+2023-09-28 05:03:31,017 [INFO] [bardcoder_lib.py:75] [_configure_api] - Palm API configured successfully.
+2023-09-28 05:03:35,700 [INFO] [bardcoder_lib.py:122] [generate_code] - Generating code with mode: precise, top_k: 40, top_p: 0.95
+2023-09-28 05:03:35,701 [INFO] [bardcoder_lib.py:130] [generate_code] - Generating code for prompt: Design a Python Code to Write Prime numbers from 1 to 30
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. in language: python
+2023-09-28 05:03:35,701 [INFO] [bardcoder_lib.py:132] [generate_code] - Generating code for prompt: Design a Python Code to Write Prime numbers from 1 to 30
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. in language: python
+2023-09-28 05:03:35,701 [INFO] [bardcoder_lib.py:144] [generate_code] - Prompt constructed successfully: 
+            Task: Design a program Design a Python Code to Write Prime numbers from 1 to 30
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. with the following guidelines and
+            make sure the output is printed on the screen.
+            And make sure the output contains only the code and nothing else.
+
+            Guidelines:
+            - Ensure the method is modular in its approach.
+- Integrate robust exception handling.
+- Add error handling to each module.
+- Optimize the code to ensure it runs efficiently.
+            
+2023-09-28 05:03:39,330 [INFO] [bardcoder_lib.py:161] [generate_code] - Palm coder is initialized.
+2023-09-28 05:03:39,331 [INFO] [bardcoder_lib.py:162] [generate_code] - Generated code: ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5)...
+2023-09-28 05:03:39,331 [INFO] [bardcoder_lib.py:92] [_extract_code] - Code extracted successfully.
+2023-09-28 05:03:39,331 [INFO] [bardcoder_lib.py:241] [save_code] - Attempting to save code to file: codes/code_generated
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:251] [save_code] - Saving code ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) with filename: codes/code_generated
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:238] [get_code_extension] - Getting code extension from code ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5)
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:241] [get_code_extension] - Code extension: python
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:254] [save_code] - Code extension: .python
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:257] [save_code] - Saving code with filename: codes/code_generated and extension: .python and code: ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def print_primes(n):
+    for i in range(2, n + 1):
+        if is_prime(i):
+            print(i, end=" ")
+
+
+if __name__ == "__main__":
+    print_primes(30)
+```
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:265] [save_code] - codes/code_generated.py saved.
+2023-09-28 05:03:39,331 [INFO] [bardcoder_lib.py:244] [save_code] - Code saved successfully to file: codes/code_generated.py
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:238] [get_code_extension] - Getting code extension from code ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5)
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:241] [get_code_extension] - Code extension: python
+2023-09-28 05:03:39,331 [INFO] [bardcoder_lib.py:252] [execute_code] - Attempting to execute code: def is_prime(n):
+    if n < 2:
+        return Fa in language: python with Compiler Mode: offline
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:43] [execute_code] - Executing code: def is_prime(n):
+    if n < 2:
+        return Fa in language: python with Compiler Mode: offline
+2023-09-28 05:03:39,331 [INFO] [code_executor.py:94] [run_code] - Running code: def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+   in language: python
+2023-09-28 05:03:39,341 [INFO] [bardcoder_lib.py:254] [execute_code] - Code executed successfully.
+2023-09-28 05:10:01,604 [INFO] [bardcoder_lib.py:73] [_configure_api] - API key provided from settings.
+2023-09-28 05:10:01,604 [INFO] [bardcoder_lib.py:75] [_configure_api] - Palm API configured successfully.
+2023-09-28 05:10:15,483 [INFO] [bardcoder_lib.py:122] [generate_code] - Generating code with mode: precise, top_k: 40, top_p: 0.95
+2023-09-28 05:10:15,483 [INFO] [bardcoder_lib.py:130] [generate_code] - Generating code for prompt: Design a Python Code to Write Prime numbers from 1 to 30
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. in language: python
+2023-09-28 05:10:15,484 [INFO] [bardcoder_lib.py:132] [generate_code] - Generating code for prompt: Design a Python Code to Write Prime numbers from 1 to 30
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. in language: python
+2023-09-28 05:10:15,484 [INFO] [bardcoder_lib.py:144] [generate_code] - Prompt constructed successfully: 
+            Task: Design a program Design a Python Code to Write Prime numbers from 1 to 30
+Dont ask the input from user.If input values are provided in code just use them. otherwise, you can hardcode the input values in code. with the following guidelines and
+            make sure the output is printed on the screen.
+            And make sure the output contains only the code and nothing else.
+
+            Guidelines:
+            - Ensure the method is modular in its approach.
+- Integrate robust exception handling.
+- Add error handling to each module.
+- Optimize the code to ensure it runs efficiently.
+            
+2023-09-28 05:10:18,949 [INFO] [bardcoder_lib.py:161] [generate_code] - Palm coder is initialized.
+2023-09-28 05:10:18,949 [INFO] [bardcoder_lib.py:162] [generate_code] - Generated code: ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5)...
+2023-09-28 05:10:18,950 [INFO] [bardcoder_lib.py:92] [_extract_code] - Code extracted successfully.
+2023-09-28 05:10:18,950 [INFO] [bardcoder_lib.py:241] [save_code] - Attempting to save code to file: codes/code_generated
+2023-09-28 05:10:18,950 [INFO] [code_executor.py:252] [save_code] - Saving code ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) with filename: codes/code_generated
+2023-09-28 05:10:18,950 [INFO] [code_executor.py:239] [get_code_extension] - Getting code extension from code ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5)
+2023-09-28 05:10:18,950 [INFO] [code_executor.py:242] [get_code_extension] - Code extension: python
+2023-09-28 05:10:18,950 [INFO] [code_executor.py:255] [save_code] - Code extension: .python
+2023-09-28 05:10:18,950 [INFO] [code_executor.py:258] [save_code] - Saving code with filename: codes/code_generated and extension: .python and code: ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+        if n % i == 0:
+            return False
+    return True
+
+
+def main():
+    for i in range(1, 31):
+        if is_prime(i):
+            print(i, end=" ")
+
+
+if __name__ == "__main__":
+    main()
+```
+2023-09-28 05:10:18,951 [INFO] [code_executor.py:266] [save_code] - codes/code_generated.py saved.
+2023-09-28 05:10:18,951 [INFO] [bardcoder_lib.py:244] [save_code] - Code saved successfully to file: codes/code_generated.py
+2023-09-28 05:10:18,951 [INFO] [code_executor.py:239] [get_code_extension] - Getting code extension from code ```python
+def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5)
+2023-09-28 05:10:18,951 [INFO] [code_executor.py:242] [get_code_extension] - Code extension: python
+2023-09-28 05:10:18,952 [INFO] [bardcoder_lib.py:252] [execute_code] - Attempting to execute code: def is_prime(n):
+    if n < 2:
+        return Fa in language: python with Compiler Mode: offline
+2023-09-28 05:10:18,952 [INFO] [code_executor.py:43] [execute_code] - Executing code: def is_prime(n):
+    if n < 2:
+        return Fa in language: python with Compiler Mode: offline
+2023-09-28 05:10:18,952 [INFO] [code_executor.py:95] [run_code] - Running code: def is_prime(n):
+    if n < 2:
+        return False
+    for i in range(2, int(n ** 0.5) + 1):
+   in language: python
+2023-09-28 05:10:18,973 [INFO] [code_executor.py:111] [run_code] - Input file: /var/folders/q0/rj0k1xgn28x14thfz4gnbm5c0000gn/T/tmpx509drn0.py
+2023-09-28 05:10:19,020 [INFO] [code_executor.py:114] [run_code] - Runner Output execution: 2 3 5 7 11 13 17 19 23 29 
+2023-09-28 05:10:19,020 [INFO] [bardcoder_lib.py:254] [execute_code] - Code executed successfully.
