@@ -5,7 +5,7 @@
 *.doc
 *.md
 .env
-.DS_Store
+*.DS_Store
 graph.png
 *.txt
 *.json
@@ -13,3 +13,4 @@ graph.png
 /codes/*
 /response/*
 /uploads/*
+.log
