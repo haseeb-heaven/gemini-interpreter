@@ -10,3 +10,5 @@ scikit-learn
 tabulate
 librosa
 scipy
+python-dotenv
+google-generativeai
