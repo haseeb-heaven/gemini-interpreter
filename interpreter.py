@@ -1,5 +1,6 @@
 
 import os
+import sys
 import time
 import subprocess
 import traceback
@@ -69,7 +70,7 @@ def execute_code(bard_coder, code):
             else:  # it's the final try
                 return None
             
-def remove_files():
+def clean_responses():
     files_to_remove = ['graph.png', 'chart.png', 'table.md']
     for file in files_to_remove:
         try:
@@ -79,12 +80,15 @@ def remove_files():
         except Exception as e:
             print(f"Error in removing {file}: {str(e)}")
 
-def bard_main() -> None:
+import argparse
+
+def bard_main(args) -> None:
     try:
         display_markdown_message("Welcome to **PALM - Interpreter**")
         bard_coder = setup_bard_coder()
-        display_markdown_message("Enter prompt (or type '**qui**t' or '**exit**' to terminate): ")
         
+
+        display_markdown_message("Enter prompt (or type '**qui**t' or '**exit**' to terminate): ")
         while True:
             prompt = input("> ")
             
@@ -92,7 +96,10 @@ def bard_main() -> None:
             if prompt.lower() in ['quit', 'exit']:
                 display_markdown_message("Terminating the program...")
                 break
-             
+                
+            # clean responses
+            clean_responses()
+            
             # Check if prompt is empty.
             if not prompt and prompt.__len__() == 0:
                 display_markdown_message(f"Prompt is empty")
@@ -112,7 +119,12 @@ def bard_main() -> None:
                     
             code = generate_code(bard_coder, prompt)
             if code is not None:
-                execute_code(bard_coder, code)
+                if args.save_code:
+                    with open('generated_code.py', 'w') as file:
+                        file.write(code)
+                if args.exec:
+                    if input("Do you want to execute the code? (y/n): ").lower() == 'y':
+                        execute_code(bard_coder, code)
                 
             try:
                 # Check if graph.png exists and open it using subprocess
@@ -139,4 +151,23 @@ def bard_main() -> None:
 
 # App main entry point.
 if __name__ == "__main__":
-    bard_main()
+    try:
+        parser = argparse.ArgumentParser(description='PALM - Interpreter')
+        parser.add_argument('--exec', '-e', action='store_true', help='Execute the code')
+        parser.add_argument('--save_code', '-s', action='store_true', help='Save the generated code')
+        parser.add_argument('--version', '-v', action='version', version='%(prog)s 1.0')
+        args = parser.parse_args()
+        
+        # Check if only the application name is passed
+        if len(sys.argv) <= 1 and sys.argv[0] == parser.prog:
+            display_markdown_message("**Usage: python interpreter.py [options]**")
+            display_markdown_message("**Options:**")
+            display_markdown_message("**--exec, -e: Execute the code**")
+            display_markdown_message("**--save_code: Save the generated code**")
+            display_markdown_message("**--version: Show the version of the program**")
+            sys.exit(1)
+        
+        bard_main(args)
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        traceback.print_exc()

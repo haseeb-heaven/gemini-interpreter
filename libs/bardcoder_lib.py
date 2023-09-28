@@ -60,9 +60,9 @@ class BardCoder:
             if "documentation" in self.guidelines:
                 self.guidelines_list.append("- Document the code.")
             if "code_only" in self.guidelines:
-                self.guidelines_list.append("- Generate code only and make sure there are no comments generated or docs alongside the code")
+                self.guidelines_list.append("- Generate code only and make sure there are no comments generated or docs alongside the code and dont ask input from the user of any kind")
             if "script_only" in self.guidelines:
-                self.guidelines_list.append("- Generate the code like script in such a way that there should not be any method or comments defined in code just code line by line written")
+                self.guidelines_list.append("- Generate the code like script in such a way that there should not be any method or comments defined in code just code line by line written\nAttention: There should be no comments in the code.")
             # Convert the list to a string
             self.guidelines = "\n".join(self.guidelines_list)
         except:
