@@ -181,7 +181,7 @@ class BardCoder:
                 # extract the code from the palm completion
                 self.code = self.palm_generator.result
                 # raise exception if self.code is empty or invalid
-                if self.code is not None and len(self.code) == 0:
+                if self.code is None or len(self.code) == 0:
                     raise ValueError("Generated code is empty or invalid.")
                 
                 logger.info(f"Palm coder is initialized.")
@@ -293,7 +293,35 @@ class BardCoder:
         except Exception as exception:
             logger.error(f"Error in executing code: {traceback.format_exc()}")
             raise Exception(exception)
-        
+    
+    def execute_script(self, script:str, os_type:str='macos'):
+        output = error = None
+        try:
+            if not script:
+                raise ValueError("Script must be provided.")
+            if not os_type:
+                raise ValueError("OS type must be provided.")
+            
+            logger.info(f"Attempting to execute script: {script[:50]}")
+            if os_type.lower() == 'macos':
+                output, error = self.code_executor.run_apple_script(script)
+            elif os_type.lower() == 'linux':
+                output, error = self.code_executor.run_bash_script(script)
+            elif os_type.lower() == 'windows':
+                output, error = self.code_executor.run_powershell_script(script)
+            else:
+                raise ValueError("Invalid OS type. Please provide 'macos', 'linux', or 'windows'.")
+            
+            if output:
+                logger.info(f"Script executed successfully with output: {output[:50]}...")
+            if error:
+                logger.error(f"Script executed with error: {error}...")
+        except Exception as exception:
+            logger.error(f"Error in executing script: {traceback.format_exc()}")
+            error = str(exception)
+        finally:
+            return output, error
+    
     def get_code_extension(self,code=None):
         try:
             return self.code_executor.get_code_extension(code=None)

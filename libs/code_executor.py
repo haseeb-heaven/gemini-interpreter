@@ -33,7 +33,22 @@ class CodeExecutor:
         self.code = code
         self.extracted_code = code
         self.code_extenstion = code_extenstion
-    
+        
+    def run_apple_script(self, script: str):
+        stdout = stderr = None
+        try:
+            logger.info("Running AppleScript")
+            process = subprocess.Popen(['osascript', '-'], stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = process.communicate(script.encode())
+            logger.info(f"Output is {stdout.decode()} and error is {stderr.decode()}")
+            if process.returncode != 0:
+                logger.error(f"Error in running AppleScript: {stderr.decode()}")
+        except Exception as exception:
+            logger.error(f"Exception in running AppleScript: {str(exception)}")
+            stderr = str(exception)
+        finally:
+            return stdout.decode().strip() if stdout else None, stderr.decode().strip() if stderr else None
+
     def execute_code(self,code:str,language: str='python', compiler_mode: str='offline'):
         
         if not code or len(code.strip()) == 0 or not language or len(language.strip()) == 0:
