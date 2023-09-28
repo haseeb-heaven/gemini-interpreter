@@ -173,8 +173,8 @@ class BardCoder:
                 top_k=self.top_k,
                 top_p=self.top_p,
                 stop_sequences=[],
-                safety_settings=[{"category":"HARM_CATEGORY_DEROGATORY","threshold":1},{"category":"HARM_CATEGORY_TOXICITY","threshold":1},{"category":"HARM_CATEGORY_VIOLENCE","threshold":2},{"category":"HARM_CATEGORY_SEXUAL","threshold":2},{"category":"HARM_CATEGORY_MEDICAL","threshold":2},{"category":"HARM_CATEGORY_DANGEROUS","threshold":2}],
-            )
+                safety_settings=[],  # Empty list to disable the harm categories
+             )
             
             if self.palm_generator:
                 # extract the code from the palm completion
