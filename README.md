@@ -7,10 +7,10 @@
 [![Plugin](https://img.shields.io/badge/Code%20Interpreter-CodeSpace-blue)](https://haseeb-heaven-legendary-guide-x555j7vpv4phprg6-8501.preview.app.github.dev/)</br>
 <a href="https://www.buymeacoffee.com/haseebheaven"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=haseebheaven&button_colour=40DCA5&font_colour=ffffff&font_family=Cookie&outline_colour=000000&coffee_colour=FFDD00" /></a>
 
-## General Information
-AutoBard-Coder is a _code generator_ and _code interpreter_ for [Google Bard](https://bard.google.com/).🙌👩‍💻👨‍💻 It uses the **Unofficial** [Bard API](https://github.com/dsdanielpark/Bard-API) by **_dsdanielpark_**  which is licensed under the MIT license. 
-to interact with Google bard and refine the results for coding purposes. 
-The main purpose of this is for **research** and **educational** purposes. As this can be very useful for **data analysis** and **Programmers**.
+## 🌟 General Information 🌟
+**AutoBard-Coder** is a _code generator_ and _code interpreter_ for [Google Bard](https://bard.google.com/).🙌👩‍💻👨‍💻 It now uses the **Official** [Bard API](https://makersuite.google.com/app/apikey) provided by Google, which is safe to use. 🛡️
+This application interacts with Google Bard and refines the results for coding purposes. 🎯
+The main purpose of this is for **research** 🧪 and **educational** 🎓 purposes. It can be very useful for **data analysis** 📊 and **Programmers** 💻.
 
 ## Application main UI.
 ### BardCoder:
@@ -19,33 +19,26 @@ The main purpose of this is for **research** and **educational** purposes. As th
 ### Code Interpreter:
 ![code_interpreter](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/code_interpreter_main_ui.png?raw=true "")</br>
 
-## Setup Process
-To set up AutoBard-Coder, you will need to install the dependencies: `streamlit` and `bardapi`. </br>
-You will also need to authenticate with the Bard API by visiting https://bard.google.com/, </br>
-- Opening the console with F12 </br>
-- Going to **Application** → **Cookies**, and copying the value of the **__Secure-1PSID** cookie.</br>
-- Then you can setup the key to your **local environment** by running the following command:</br>
-```export _BARD_API_KEY=<__Secure-1PSID value>``` Remember the `_` before `BARD_API_KEY` is important. </br></br>
-![showcase_api_key](https://github.com/haseeb-heaven/AutoBard-Coder/blob/master/resources/showcase_api_key.png?raw=true "")</br>
-
-## Session Keys.
-Due to technical changes from [Bard API - Sessions Issue](https://github.com/dsdanielpark/Bard-API/issues/155) you now need to have **3 Sessions keys** instead of one now this to work and create a `.env` file and copy all keys
-in that environment file like this.
-
-**.env file**</br>
-SECURE_1PSID='**XXXX**'</br>
-SECURE_1PSIDCC='**XXXX**'</br>
-SECURE_1PSIDTS='**XXXX**'</br>
-
-And then `bardcoder` will **automatically** read the keys from these files and will use them as your **session** and **maintain** it.
+## Setup Process - OUTDATED
+~~To set up AutoBard-Coder, you will need to install the dependencies: `streamlit` and `bardapi`.~~ </br>
+~~You will also need to authenticate with the Bard API by visiting https://bard.google.com/,~~ </br>
+~~- Opening the console with F12~~ </br>
+~~- Going to **Application** → **Cookies**, and copying the value of the **__Secure-1PSID** cookie.~~</br>
+~~- Then you can setup the key to your **local environment** by running the following command:~~</br>
+~~```export _BARD_API_KEY=<__Secure-1PSID value>``` Remember the `_` before `BARD_API_KEY` is important.~~ </br></br>
 
 
-## Installation Guide
-Do not expose the `__Secure-1PSID value`. 
-Note that while it is referred to as an `API KEY` for convenience, it is not an officially provided API KEY.
+## Installation Guide - UPDATED
 
-To install the dependencies, you can use pip to install from the **requirements.txt** file:
-This will install streamlit, bard-coder-api, and any other dependencies listed in the `requirements.txt` file.
+*Step 1:* **Obtain the Google Palm API key.**
+
+*Step 2:* Visit the following URL: *https://makersuite.google.com/app/apikey*
+
+*Step 3:* Click on the **Create API Key** button.
+
+*Step 4:* The generated key is your API key. Please make sure to **copy** it and **paste** it in the required field below.
+
+*Note:* The API key is crucial for the functioning of the AutoBard-Coder. Please ensure to keep it safe and do not share it with anyone.
 
 ## Usage
 There are 3 components of this application:
@@ -163,6 +156,7 @@ All notable changes to this project will be documented in this file.
 
 | Version | Date       | Added                                              | Fixed                |
 | ------- | ---------- | -------------------------------------------------- | -------------------- |
+| 1.4     | 2023-09-28 | - Added Palm 2 Official API now. | - Settings and Logs and Bug fixes |
 | 1.3     | 2023-05-29 | - **Updated** with totally new _UI_ and _UX_. 🎨<br>- Updated security for code checking and prompt checking. 🔒<br>- Added new Help section. 🆘 | - Fixed API Key issues. |
 | 1.2     | 2023-05-28 | - Advanced security for code and prompt checking. 🔒<br>- Support for graphs, charts, and tables. 📊<br>- More libraries for data science. 🧬 |                      |
 | 1.1     | 2023-05-27 | - Upload files option. 📤<br>- API key settings. 🔑  | - Error handling from server. 🛠 |

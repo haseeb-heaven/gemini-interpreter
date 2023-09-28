@@ -57,6 +57,10 @@ class BardCoder:
                 self.guidelines_list.append("- Ensure the code is robust against potential issues.")
             if "naming_conventions" in self.guidelines:
                 self.guidelines_list.append("- Follow standard naming conventions.")
+            if "documentation" in self.guidelines:
+                self.guidelines_list.append("- Document the code.")
+            if "code_only" in self.guidelines:
+                self.guidelines_list.append("- Generate code only and make sure there are no comments generated or docs alongside the code")
 
             # Convert the list to a string
             self.guidelines = "\n".join(self.guidelines_list)
@@ -175,6 +179,10 @@ class BardCoder:
             if self.palm_generator:
                 # extract the code from the palm completion
                 self.code = self.palm_generator.result
+                # raise exception if self.code is empty or invalid
+                if self.code is not None and len(self.code) == 0:
+                    raise ValueError("Generated code is empty or invalid.")
+                
                 logger.info(f"Palm coder is initialized.")
                 logger.info(f"Generated code: {self.code[:100]}...")
             
@@ -194,8 +202,9 @@ class BardCoder:
             else:
                 raise Exception("Error in code generation: Please enter a valid code.")
             
-        except Exception as e:
+        except Exception as exception:
             logger.error(f"Error in code generation: {traceback.format_exc()}")
+            raise Exception(exception)
 
     def fix_code(self, code,code_language):
         """
@@ -250,24 +259,31 @@ class BardCoder:
                     raise Exception("Error in code fixing: Please enter a valid code.")
             else:
                 logger.error("Error in code fixing: Please enter a valid code and language.")
-        except Exception as e:
+        except:
             logger.error(f"Error in code fixing: {traceback.format_exc()}")
             
     def save_code(self,code_file:str):
         try:
-            logger.info(f"Attempting to save code to file: {code_file}")
+            if not self.code or not code_file:
+                raise ValueError("Both code and filename must be provided.")
+            
+            logger.info(f"Attempting to save {self.code[:50]} to file: {code_file}")
             self.code_executor.extracted_code = self.extracted_code
             saved_file = self.code_executor.save_code(self.code,code_file)
             logger.info(f"Code saved successfully to file: {saved_file}")
             return saved_file
-        except Exception as e:
-            logger.error(f"Error in saving code to file: {traceback.format_exc()}")
+        except:
+            if traceback.format_exc() is not None:
+                logger.error(f"Error in saving code to file: {traceback.format_exc()}")
             raise Exception("Error in saving code to file.")
 
-    def execute_code(self, compiler_mode: str, code: str, language: str):
+    def execute_code(self,code:str,language: str='python', compiler_mode: str='offline'):
+        if not code or not language or not compiler_mode:
+            raise ValueError("Code, language, and compiler mode must be provided.")
         try:
             logger.info(f"Attempting to execute code: {code[:50]} in language: {language} with Compiler Mode: {compiler_mode}")
-            output = self.code_executor.execute_code(compiler_mode, code, language)
+            output = self.code_executor.execute_code(code, language,compiler_mode)
+            logger.info(f"Code executed successfully with output: {output[:100]}...")
             
             # Check for errors in code execution
             if "error" in output.lower() or "exception" in output.lower() or "SyntaxError" in output.lower() or "NameError" in output.lower():

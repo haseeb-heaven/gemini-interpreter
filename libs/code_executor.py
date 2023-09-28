@@ -34,7 +34,7 @@ class CodeExecutor:
         self.extracted_code = code
         self.code_extenstion = code_extenstion
     
-    def execute_code(self, compiler_mode: str, code: str,language: str):
+    def execute_code(self,code:str,language: str='python', compiler_mode: str='offline'):
         
         if not code or len(code.strip()) == 0 or not language or len(language.strip()) == 0:
             logger.error("Error in code execution: Generated code is empty.")
@@ -44,7 +44,7 @@ class CodeExecutor:
 
         try:
             if len(code) == 0 or code == "":
-                return
+                raise Exception("Execution code is empty or null")
             
             if compiler_mode.lower() == "online":
                 html_content = self.generate_dynamic_html(language, code)
@@ -53,6 +53,7 @@ class CodeExecutor:
 
             else:
                 output = self.run_code(code, language)
+                logger.info(f"Runner Output execution: {output}")
                 return output
 
         except Exception as e:
@@ -105,8 +106,7 @@ class CodeExecutor:
                 file.flush()
 
                 logger.info(f"Input file: {file.name}")
-                output = subprocess.run(
-                    ["python", file.name], capture_output=True, text=True)
+                output = subprocess.run(["python", file.name], capture_output=True, text=True)
                 logger.info(f"Runner Output execution: {output.stdout + output.stderr}")
                 return output.stdout + output.stderr
 
@@ -126,8 +126,7 @@ class CodeExecutor:
                         return compile_output.stderr
 
                     logger.info(f"Output file: {exec_file.name}")
-                    run_output = subprocess.run(
-                        [exec_file.name], capture_output=True, text=True)
+                    run_output = subprocess.run([exec_file.name], capture_output=True, text=True)
                     logger.info(f"Runner Output execution: {run_output.stdout + run_output.stderr}")
                     return run_output.stdout + run_output.stderr
 
@@ -137,8 +136,7 @@ class CodeExecutor:
                 file.flush()
 
                 logger.info(f"Input file: {file.name}")
-                output = subprocess.run(
-                    ["node", file.name], capture_output=True, text=True)
+                output = subprocess.run(["node", file.name], capture_output=True, text=True)
                 logger.info(f"Runner Output execution: {output.stdout + output.stderr}")
                 return output.stdout + output.stderr
             
@@ -229,10 +227,12 @@ class CodeExecutor:
     
             # get the code extension from bard response - automatically detects the language from bard response.
     
-    def get_code_extension(self, code=None):
+    def get_code_extension(self, code):
+        logger.info(f"Value of code is {code}")
+        if code is None or not isinstance(code, str):
+            raise ValueError("Code must be a non-empty string.")
         try:
-            code = code if code else self.code
-            logger.info(f"Getting code extension from code {code[:100]}")
+            logger.info(f"Getting code extension from code {code[:50]}")
             if code and not code in "can't help":
                 self.code_extension = code.split('```')[1].split('\n')[0]
                 logger.info(f"Code extension: {self.code_extension}")
@@ -243,11 +243,13 @@ class CodeExecutor:
             raise Exception(stack_trace)
         return None
     
-    def save_code(self,code,filename):
+    def save_code(self, code, filename):
+        if not code or not filename:
+            raise ValueError("Both code and filename must be provided.")
         try:
-            logger.info(f"Saving code {code[:100]} with filename: {filename}")
+            logger.info(f"Saving code {code[:50]} with filename: {filename}")
             self.code = code
-            self.code_extenstion = '.' + self.get_code_extension()
+            self.code_extenstion = '.' + self.get_code_extension(self.code)
             logger.info(f"Code extension: {self.code_extenstion}")
             if code:
                 code = code.replace("\\n", "\n").replace("\\t", "\t")
@@ -269,6 +271,8 @@ class CodeExecutor:
 
     # save multiple codes from bard response
     def save_code_choices(self, filename):
+        if not filename or not isinstance(filename, str):
+            raise ValueError("Filename must be a non-empty string.")
         try:
             logger.info(f"Saving code choices with filename: {filename}")
             extension = self.get_code_extension()
